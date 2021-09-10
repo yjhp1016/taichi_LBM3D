@@ -9,3 +9,13 @@
   year={2013},
   publisher={Elsevier}
 }
+@article{yang2019image,
+  title={Image-based simulations of absolute permeability with massively parallel pseudo-compressible stabilised finite element solver},
+  author={Yang, Liang and Yang, Jianhui and Boek, Edo and Sakai, Mikio and Pain, Christopher},
+  journal={Computational Geosciences},
+  volume={23},
+  number={5},
+  pages={881--893},
+  year={2019},
+  publisher={Springer}
+}
