@@ -6,7 +6,7 @@ The code is only around 400 lines and intuitive to understand. It is also easy t
 
 
 ## Installation
-This solver is develped using Taichi programming language (a python embeded programming language), install [Taichi](https://github.com/taichi-dev/taichi) is required.
+This solver is develped using Taichi programming language (a python embeded programming language), install [Taichi](https://github.com/taichi-dev/taichi) is required, by `pip install taichi`
 Pyevtk is required for export simualtion result for visualization in Paraview, install [Pyevtk](https://pypi.org/project/pyevtk/) by `pip install pyevtk`
 
 ## Usage
