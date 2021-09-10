@@ -9,6 +9,16 @@
   year={2013},
   publisher={Elsevier}
 }
+@article{bijeljic2013predictions,
+  title={Predictions of non-Fickian solute transport in different classes of porous media using direct simulation on pore-scale images},
+  author={Bijeljic, Branko and Raeini, Ali and Mostaghimi, Peyman and Blunt, Martin J},
+  journal={Physical Review E},
+  volume={87},
+  number={1},
+  pages={013011},
+  year={2013},
+  publisher={APS}
+}
 @article{yang2019image,
   title={Image-based simulations of absolute permeability with massively parallel pseudo-compressible stabilised finite element solver},
   author={Yang, Liang and Yang, Jianhui and Boek, Edo and Sakai, Mikio and Pain, Christopher},
