@@ -44,6 +44,15 @@ Viscosity is set in `niu = 0.1`
 
 All the quantities are in lattice units
 
+## Example simulations
+
+###### Flow past a car at low Reynolds number (without turbulence model)
+![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/car1.png)
+![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/car2.png)
+
+###### Single phase flow in a sandstone (Sandstone geometry is build from Micro-CT images at 7.5 microns)
+![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/ftb1.png)
+
 ## Authors
 Jianhui Yang @yjhp1016
 Liang Yang @ly16302
