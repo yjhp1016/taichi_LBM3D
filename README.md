@@ -42,16 +42,16 @@ Viscosity is set in `niu = 0.1`
 
 All the quantities are in lattice units
 
-## Example simulations
+## Examples (Direct Numerical Simulation)
 
-###### Flow past a car at low Reynolds number (without turbulence model)
+###### Flow over a vehicle: inertia dominated
 ![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/car1.png)
 ![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/car2.png)
 
-###### Single phase flow in a sandstone (Sandstone geometry is build from Micro-CT images at 7.5 microns)
+###### Single phase flow in a sandstone (Sandstone geometry is build from Micro-CT images at 7.5 microns): viscous dominated
 ![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/ftb1.png)
 
-###### Wind past city buildings for urban planning
+###### Urban air flow: inertia dominated
 ![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/city1.png)
 
 ## Authors
