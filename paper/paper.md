@@ -1,5 +1,5 @@
 ---
-title: ''
+title: 'Taichi_LBM3D: A 3D lattice Bolzmann solver in Taichi'
 tags:
   - Taichi
   - Digital Rock Physics
@@ -9,3 +9,10 @@ bibliography: paper.bib
 ---
 
 # Summary
+Taichi_LBM3D is an open-source 3D lattice Boltzmann solver with Multi-Relaxation-Time collision scheme and sparse storage structure implemented using Taichi programming language, which is designed for porous medium flow simulation.
+
+# Statement of Need
+Understanding the flow over porous medium and calculation the flow field is important in petroleum engineering, earth science and enviromental engineering problem. With the advancement of micro-CT imaging with a very fine resolition, it can provide the pore space of many reservoir rocks. So it is possible to solve the flow equation directly within porous rock. There are several approaches, including finite volume method (FVM) [@bijeljic2013predictions], finite element method (FEM) [@yang2019image]and lattice Boltzmann method (LBM) [@yang2013comparison]. LBM is a simplified Boltzmann transport solver in lattices, with a relaxation time. However, there are a few LBM code which can run efficiently on GPUs, especially with a sparse storage structure. Taichi_LBM3D was developed for researcher in Digital Rock Physics, but it can simulate the inertia dominated flow, for example, flow over vehicles, urban air flows, etc. 
+
+# References
+
