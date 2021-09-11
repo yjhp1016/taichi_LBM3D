@@ -53,6 +53,9 @@ All the quantities are in lattice units
 ###### Single phase flow in a sandstone (Sandstone geometry is build from Micro-CT images at 7.5 microns)
 ![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/ftb1.png)
 
+###### Wind past city buildings for urban planning
+![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/city1.png)
+
 ## Authors
 Jianhui Yang @yjhp1016
 Liang Yang @ly16302
