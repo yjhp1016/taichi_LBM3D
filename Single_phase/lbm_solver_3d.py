@@ -297,7 +297,7 @@ dt_count = 0
 
 
 #solid_np = init_geo('./BC.dat')
-solid_np = init_geo('/home/jianhui/Work/tmp/img_ftb131.txt')
+solid_np = init_geo('./img_ftb131.txt')
 solid.from_numpy(solid_np)
 
 static_init()
