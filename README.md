@@ -69,7 +69,7 @@ for two phase solver, niu_l for liquid phase, niu_g for phase 2
 ###### Urban air flow: inertia dominated
 ![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/city1.png)
 
-###### Two Phase flow: oil (non-wetting phase) into a ketton carbonate rock saturated with water (wetting phase)
+###### Two Phase flow: oil (non-wetting phase) into a ketton carbonate rock saturated with water (wetting phase): capillary dominated
 ![Alt text](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/ket_drain.gif)
 
 ## Authors
