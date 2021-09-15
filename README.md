@@ -22,6 +22,8 @@ for k in range(nz)
 You can specify the input file at:
 `solid_np = init_geo('./img_ftb131.txt')`
 
+For two phase solver, a two phase distribution input file is also requred. This file is composed of -1 and 1 representing phase 1 and 2 respectively
+
 ###### set geometry size
 Set geometry input file size here: `nx,ny,nz = 131,131,131`
 
@@ -38,9 +40,19 @@ if `bc_x_left == 2` is select, then the desired velocity on the left side of X d
 The same rule applied to the other five sides
 
 ###### set viscosity
-Viscosity is set in `niu = 0.1`
+Viscosity is set in `niu = 0.1` for single phase solver
+```
+niu_l = 0.05
+niu_g = 0.2
+```
+for two phase solver, niu_l for liquid phase, niu_g for phase 2
+
+###### Additional parameters for two phase solver
+
 
 All the quantities are in lattice units
+
+
 
 ## Examples (Direct Numerical Simulation)
 
