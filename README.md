@@ -54,6 +54,9 @@ All the quantities are in lattice units
 ###### Urban air flow: inertia dominated
 ![image](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/city1.png)
 
+###### Two Phase flow: oil (non-wetting phase) into a ketton carbonate rock saturated with water (wetting phase)
+![Alt text](https://github.com/yjhp1016/taichi_LBM3D/blob/main/img/ket_drain.gif)
+
 ## Authors
 Jianhui Yang @yjhp1016
 Liang Yang @ly16302
