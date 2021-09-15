@@ -37,7 +37,7 @@ set boundary condition type in `bc_x_left`; 0=periodic boundary condition, 1 = f
 if `bc_x_left == 1` is select, then the desired pressure on the left side of X direction need to be given in `rho_bcxl`
 if `bc_x_left == 2` is select, then the desired velocity on the left side of X direction need to be given in `vx_bcxl, vy_bcxl, vz_bcxl`
 
-The same rule applied to the other five sides
+The same rules applied to the other five sides
 
 ###### set viscosity
 Viscosity is set in `niu = 0.1` for single phase solver
@@ -48,9 +48,12 @@ niu_g = 0.2
 for two phase solver, niu_l for liquid phase, niu_g for phase 2
 
 ###### Additional parameters for two phase solver
+- Contact angle of the solid surface can be specified in `psi_solid = 0.7` this value is the cosine of the desired contact angle, so the value is between -1 and 1
+- Interfical tension of two phases is set in `CapA = 0.005`
+- Boundary condition for the phase setting: `bc_psi_x_left, psi_x_left = 1, -1.0 ` bc_psi_x_left = 0 for periodic boundary for the phase field, 1 = constant phase field value boundary. If bc_psi_x_left is set as 1, then the next parameter is desired constant phase for this boundary: psi_x_left should be set as -1.0 or 1.0 for phase 1 or phase 2 respectively. 
 
 
-All the quantities are in lattice units
+**All the quantities are in lattice units**
 
 
 
