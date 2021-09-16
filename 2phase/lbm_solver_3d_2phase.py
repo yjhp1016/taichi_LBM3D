@@ -1,7 +1,7 @@
 import taichi as ti
 import numpy as np
 import taichi_glsl as ts
-from evtk.hl import gridToVTK
+from pyevtk.hl import gridToVTK
 import time
 from taichi_glsl import scalar
 
@@ -13,12 +13,12 @@ ti.init(arch=ti.cpu)
 
 
 enable_projection = True
-nx,ny,nz = 100,50,5
+nx,ny,nz = 131,131,131
 #nx,ny,nz = 131,131,131
 fx,fy,fz = 5.0e-5,-2e-5,0.0
 #niu = 0.1
-niu_l = 0.05         #psi>0
-niu_g = 0.2         #psi<0
+niu_l = 0.1         #psi>0
+niu_g = 0.1         #psi<0
 psi_solid = 0.7
 CapA = 0.005
 
@@ -58,21 +58,14 @@ rhob = ti.field(ti.f32, shape=(nx,ny,nz))
 #v = ti.Vector.field(3, ti.f32)
 #n_mem_partition = 3
 
-#block1 = ti.root.pointer(ti.ijk, (nx // 64+1, ny//64+1, nz//64+1))
-#block2 = block1.pointer(ti.ijk, 4)
-#block3 = block2.pointer(ti.ijk, 4)
-#block3.dense(ti.ijk, 4).place(rho)
-#block3.dense(ti.ijk, 4).place(v)
-
-#block1s = ti.root.pointer(ti.ijkl, (nx // 64+1, ny//64+1, nz//64+1, 1))
-#block2s = block1s.pointer(ti.ijkl, (4, 4, 4, 19))
-#block3s = block2s.pointer(ti.ijkl, (4, 4, 4, 19))
-#block3s.dense(ti.ijkl, (4, 4, 4, 19)).place(f)
-#block3s.dense(ti.ijkl, (4, 4, 4, 19)).place(F)
-
 #-------------------------------------------------------
 #cell1 = ti.root.pointer(ti.ijk, (nx//n_mem_partition+1,ny//n_mem_partition+1,nz//n_mem_partition+1))
 #cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(rho)
+#cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(psi)
+#cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(rhor)
+#cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(rhob)
+#cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(rho_r)
+#cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(rho_b)
 #cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(v)
 
 #cell2 = ti.root.pointer(ti.ijkl,(nx//3+1,ny//3+1,nz//3+1,1))
@@ -262,13 +255,18 @@ def meq_vec(rho_local,u):
 @ti.func
 def Compute_C(i):
     C = ts.vecFill(3,0.0)
+    ind_S = 0
     for s in ti.static(range(19)):
         ip = periodic_index_for_psi(i+e[s])
         if (solid[ip] == 0):
             C += 3.0*w[s]*e_f[s]*psi[ip]
         else:
+            ind_S = 1
             C += 3.0*w[s]*e_f[s]*psi_solid
-        
+
+    if (abs(rho_r[i]-rho_b[i]) > 0.9) and (ind_S == 1):
+        C = ts.vecFill(3,0.0)
+    
     return C
 
 @ti.func
@@ -605,7 +603,7 @@ time_pre = time.time()
 dt_count = 0               
 
 
-solid_np, phase_np = init_geo('./BC.dat','phase.dat')
+solid_np, phase_np = init_geo('./img_ftb131.txt','./phase_ftb131.dat')
 
 #solid_np = init_geo('./img_ftb131.txt')
 solid.from_numpy(solid_np)
@@ -616,7 +614,7 @@ init()
 
 #print(wl,wg, lg0, l1, l2,'~@@@@@~@~@~@~@')
 
-for iter in range(9000+1):
+for iter in range(80000+1):
     colission()
     streaming1()
     Boundary_condition()
@@ -625,7 +623,7 @@ for iter in range(9000+1):
     Boundary_condition_psi()
 
     
-    if (iter%100==0):
+    if (iter%500==0):
         
         time_pre = time_now
         time_now = time.time()
@@ -639,7 +637,7 @@ for iter in range(9000+1):
         print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
         print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, 10.0,  10.0))
         
-        if (iter%1000==0):
+        if (iter%10000==0):
             gridToVTK(
                 "./structured"+str(iter),
                 x,
