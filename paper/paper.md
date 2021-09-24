@@ -13,13 +13,13 @@ authors:
     orcid: 0000-0003-0901-0929
     affiliation: 3
 affiliations:
- - name: Department of Chemical Engineering, Imperial College London
+ - name: Department of Chemical Engineering, Imperial College London, UK
    index: 1
  - name: Current address TotalEnergies E&P UK Limited
    index: 2
- - name: Department of Energy and Power,Cranfield University
+ - name: Centre for Renewable Energy Systems, Department of Energy and Power, Cranfield University, MK43 0AL, UK
    index: 3
-  
+ 
 date: 12 September 2021
 bibliography: paper.bib
 ---
