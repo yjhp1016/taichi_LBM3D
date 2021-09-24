@@ -16,8 +16,8 @@ affiliations:
  - name: Department of Chemical Engineering, Imperial College London
    index: 1
  - name: Current address TotalEnergies E&P UK Limited
-   index : 2
- - name: Cranfield University
+   index: 2
+ - name: Department of Energy and Power,Cranfield University
    index: 3
   
 date: 12 September 2021
