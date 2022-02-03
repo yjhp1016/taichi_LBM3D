@@ -7,20 +7,29 @@ ti.init(arch=ti.cpu)
 
 enable_projection = True
 #nx,ny,nz = 100,50,5
-nx,ny,nz = 131,131,131
-fx,fy,fz = 0.0e-6,0.0,0.0
+nx,ny,nz = 60,50,5
+fx,fy,fz = 1.0e-6,0.0,0.0
 niu = 0.1
+geo_name = './BC.dat'
+max_timestep = 5000
+output_fre = 100
+vtk_fre = 500
+
+
 
 #Boundary condition mode: 0=periodic, 1= fix pressure, 2=fix velocity; boundary pressure value (rho); boundary velocity value for vx,vy,vz
-bc_x_left, rho_bcxl, vx_bcxl, vy_bcxl, vz_bcxl = 1, 1.0, 0.0e-5, 0.0, 0.0  #Boundary x-axis left side
-bc_x_right, rho_bcxr, vx_bcxr, vy_bcxr, vz_bcxr = 1, 0.995, 0.0, 0.0, 0.0  #Boundary x-axis left side
+bc_x_left, rho_bcxl, vx_bcxl, vy_bcxl, vz_bcxl = 0, 1.0, 0.0e-5, 0.0, 0.0  #Boundary x-axis left side
+bc_x_right, rho_bcxr, vx_bcxr, vy_bcxr, vz_bcxr = 0, 0.995, 0.0, 0.0, 0.0  #Boundary x-axis left side
 bc_y_left, rho_bcyl, vx_bcyl, vy_bcyl, vz_bcyl = 0, 1.0, 0.0, 0.0, 0.0  #Boundary x-axis left side
 bc_y_right, rho_bcyr, vx_bcyr, vy_bcyr, vz_bcyr = 0, 1.0, 0.0, 0.0, 0.0  #Boundary x-axis left side
 bc_z_left, rho_bczl, vx_bczl, vy_bczl, vz_bczl = 0, 1.0, 0.0, 0.0, 0.0  #Boundary x-axis left side
 bc_z_right, rho_bczr, vx_bczr, vy_bczr, vz_bczr = 0, 1.0, 0.0, 0.0, 0.0  #Boundary x-axis left side
 
 
+#================================================================
+
 f = ti.field(ti.f32,shape=(nx,ny,nz,19))
+f2 = ti.field(ti.f32,shape=(nx,ny,nz,19))
 F = ti.field(ti.f32,shape=(nx,ny,nz,19))
 rho = ti.field(ti.f32, shape=(nx,ny,nz))
 v = ti.Vector.field(3,ti.f32, shape=(nx,ny,nz))
@@ -29,6 +38,7 @@ S_dig = ti.field(ti.f32,shape=(19))
 e_f = ti.Vector.field(3,ti.f32, shape=(19))
 w = ti.field(ti.f32, shape=(19))
 solid = ti.field(ti.i32,shape=(nx,ny,nz))
+ns = ti.field(ti.f32,shape=(nx,ny,nz))
 LR = ti.field(ti.i32,shape=(19))
 
 ext_f = ti.Vector.field(3,ti.f32,shape=())
@@ -219,16 +229,28 @@ def periodic_index(i):
 
     return iout
 
+
+@ti.kernel
+def streaming0():
+    for i in ti.grouped(rho):
+        if (solid[i] == 0):
+            for s in ti.static(range(19)):
+                ip = periodic_index(i+e[s])
+                f2[i,s] = f[i,s] + ns[i]*(f[ip,LR[s]] - f[i,s])
+
+
 @ti.kernel
 def streaming1():
     for i in ti.grouped(rho):
         if (solid[i] == 0):
             for s in ti.static(range(19)):
                 ip = periodic_index(i+e[s])
-                if (solid[ip]==0):
-                    F[ip,s] = f[i,s]
-                else:
-                    F[i,LR[s]] = f[i,s]
+                F[ip,s] = f2[i,s]
+                
+                #if (solid[ip]==0):
+                #    F[ip,s] = f[i,s]
+                #else:
+                #    F[i,LR[s]] = f[i,s]
                     #print(i, ip, "@@@")
 
 @ti.kernel
@@ -295,22 +317,25 @@ time_pre = time.time()
 dt_count = 0               
 
 
-#solid_np = init_geo('./BC.dat')
-solid_np = init_geo('./img_ftb131.txt')
+ns_np = init_geo(geo_name)
+solid_np = ns_np.astype(int) 
+#solid_np = init_geo('./img_ftb131.txt')
 solid.from_numpy(solid_np)
+ns.from_numpy(ns_np)
 
 static_init()
 init()
 print(bc_vel_x_left)
 
-for iter in range(500+1):
+for iter in range(max_timestep+1):
     colission()
+    streaming0()
     streaming1()
     Boundary_condition()
     #streaming2()
     streaming3()
 
-    if (iter%100==0):
+    if (iter%output_fre==0):
         
         time_pre = time_now
         time_now = time.time()
@@ -324,16 +349,16 @@ for iter in range(500+1):
         print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
         print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, 10.0,  10.0))
         
-        gridToVTK(
-            "./structured"+str(iter),
-            x,
-            y,
-            z,
-            #cellData={"pressure": pressure},
-            pointData={ "Solid": np.ascontiguousarray(solid.to_numpy()),
-                        "rho": np.ascontiguousarray(rho.to_numpy()),
-                        "velocity": (np.ascontiguousarray(v.to_numpy()[:,:,:,0]), np.ascontiguousarray(v.to_numpy()[:,:,:,1]),np.ascontiguousarray(v.to_numpy()[:,:,:,2]))
-                        }
-        )   
+        if (iter%vtk_fre==0):
+            gridToVTK(
+                "./structured"+str(iter),
+                x,
+                y,
+                z,
+                #cellData={"pressure": pressure},
+                pointData={ "Solid": np.ascontiguousarray(solid.to_numpy()),
+                            "rho": np.ascontiguousarray(rho.to_numpy()),
+                            "velocity": (np.ascontiguousarray(v.to_numpy()[:,:,:,0]), np.ascontiguousarray(v.to_numpy()[:,:,:,1]),np.ascontiguousarray(v.to_numpy()[:,:,:,2]))
+                            }
+            )   
 
-ti.print_profile_info()

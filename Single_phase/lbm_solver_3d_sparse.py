@@ -1,11 +1,9 @@
 import taichi as ti
 import numpy as np
-import taichi_glsl as ts
 from evtk.hl import gridToVTK
 import time
-from taichi_glsl import scalar
 
-from taichi_glsl.scalar import isinf, isnan
+
 
 ti.init(arch=ti.cpu)
 #ti.init(arch=ti.gpu)
@@ -136,8 +134,8 @@ X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
 
 @ti.func
 def feq(k,rho_local, u):
-    eu=ts.vector.dot(e[k],u)
-    uv=ts.vector.dot(u,u)
+    eu = e[k].dot(u)
+    uv = u.dot(u)
     feqout = w[k]*rho_local*(1.0+3.0*eu+4.5*eu*eu-1.5*uv)
     #print(k, rho_local, w[k])
     return feqout

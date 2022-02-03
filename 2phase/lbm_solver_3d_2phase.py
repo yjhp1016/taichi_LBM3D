@@ -1,3 +1,4 @@
+# NOTE: THIS CODE NEED taichi_glsl, so please use taichi version <=0.8.5
 import taichi as ti
 import numpy as np
 import taichi_glsl as ts
