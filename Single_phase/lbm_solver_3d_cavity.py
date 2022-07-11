@@ -4,7 +4,7 @@ import numpy as np
 from pyevtk.hl import gridToVTK
 import time
 
-ti.init(arch=ti.cuda, dynamic_index=True, kernel_profiler=False, print_ir=False)
+ti.init(arch=ti.cuda, dynamic_index=False, kernel_profiler=True, print_ir=False)
 
 enable_projection = True
 #nx,ny,nz = 100,50,5
@@ -219,15 +219,21 @@ def periodic_index(i):
 def streaming1():
     for i in ti.grouped(rho):
         if (solid[i] == 0):
-            for s in range(19):
+            for s in ti.static(range(19)):
                 ip = periodic_index(i+e[s])
-                if (solid[ip]==0):
-                    F[ip][s] = f[i][s]
-                else:
-                    LRs = LR[s]
-                    F[i][LRs] = f[i][s]
+                #if (solid[ip]==0):
+                F[ip][s] = f[i][s]
+                #else:
+                #    LRs = LR[s]
+                #    F[i][LRs] = f[i][s]
                     #print(i, ip, "@@@")
-
+        else:
+            #LR_np = np.array([0,2,1,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17])
+            F[i][0] = f[i][0];F[i][6] = f[i][5];F[i][9] = f[i][10];F[i][16] = f[i][15];
+            F[i][2] = f[i][1];F[i][5] = f[i][6];F[i][12] = f[i][11];F[i][15] = f[i][16];
+            F[i][1] = f[i][2];F[i][8] = f[i][7];F[i][11] = f[i][12];F[i][18] = f[i][17];
+            F[i][4] = f[i][3];F[i][7] = f[i][8];F[i][14] = f[i][13];F[i][17] = f[i][18];
+            F[i][3] = f[i][4];F[i][10] = f[i][9];F[i][13] = f[i][14];
 
 @ti.kernel
 def Boundary_condition():
@@ -334,5 +340,5 @@ for iter in range(50000+1):
 #ti.print_profile_info()
 #ti.profiler.print_kernel_profiler_info()  # default mode: 'count'
 
-#ti.profiler.print_kernel_profiler_info('trace')
-#ti.profiler.clear_kernel_profiler_info()  # clear all records
+ti.profiler.print_kernel_profiler_info('trace')
+ti.profiler.clear_kernel_profiler_info()  # clear all records
