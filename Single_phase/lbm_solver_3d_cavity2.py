@@ -8,7 +8,7 @@ ti.init(arch=ti.cuda, dynamic_index=True, kernel_profiler=False, print_ir=False)
 
 enable_projection = True
 #nx,ny,nz = 100,50,5
-nx,ny,nz = 50,50,50
+nx,ny,nz = 120,120,120
 fx,fy,fz = 0.0e-6,0.0,0.0
 niu = 0.16667
 
@@ -123,7 +123,7 @@ def init():
     for i,j,k in rho:
         rho[i,j,k] = 1.0
         v[i,j,k] = ti.Vector([0,0,0])
-        for s in range(19):
+        for s in ti.static(range(19)):
             f[i,j,k][s] = feq(s,1.0,v[i,j,k])
             F[i,j,k][s] = feq(s,1.0,v[i,j,k])
             #print(F[i,j,k,s], feq(s,1.0,v[i,j,k]))
@@ -131,18 +131,7 @@ def init():
     M[None] = ti.Matrix(M_np)
     inv_M[None] = ti.Matrix(inv_M_np)
     S_dig[None] = ti.Vector(S_dig_np)
-
-'''
-@ti.kernel
-def init_geo(r:ti.i32):
-    for i,j,k in solid:
-        solid[i,j,k] = 0
-        if ((j==0) or (j==ny-1)):
-            solid[i,j,k] = 1
-        
-        if ((i-nx/2)*(i-nx/2) + (j-ny/2)*(j-ny/2) <= r*r):
-            solid[i,j,k] = 1
-'''       
+   
 
 def init_geo(filename):
     in_dat = np.loadtxt(filename)
@@ -203,17 +192,13 @@ def colission():
             meq = meq_vec(rho[i,j,k],v[i,j,k])
             m_temp -= S_dig[None]*(m_temp-meq)
             if (ti.static(force_flag==1)):
-                for s in range(19):
+                for s in ti.static(range(19)):
                 #    m_temp[s] -= S_dig[s]*(m_temp[s]-meq[s])
                     m_temp[s] += (1-0.5*S_dig[None][s])*GuoF(i,j,k,s,v[i,j,k])
             
             f[i,j,k] = ti.Vector([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
             f[i,j,k] += inv_M[None]@m_temp
 
-            #for s in ti.static(range(19)):
-            #    f[i,j,k,s] = 0
-            #    for l in ti.static(range(19)):
-            #        f[i,j,k,s] += inv_M[s,l]*m_temp[l]
 
            
            
@@ -239,7 +224,8 @@ def streaming1():
                 if (solid[ip]==0):
                     F[ip][s] = f[i][s]
                 else:
-                    F[i][LR[s]] = f[i][s]
+                    LRs = LR[s]
+                    F[i][LRs] = f[i][s]
                     #print(i, ip, "@@@")
 
 
@@ -248,7 +234,7 @@ def Boundary_condition():
     if ti.static(bc_x_left==1):
         for j,k in ti.ndrange((0,ny),(0,nz)):
             if (solid[0,j,k]==0):
-                for s in range(19):
+                for s in ti.static(range(19)):
                     if (solid[1,j,k]>0):
                         F[0,j,k][s]=feq(s, rho_bcxl, v[1,j,k])
                     else:
@@ -257,14 +243,14 @@ def Boundary_condition():
     if ti.static(bc_x_left==2):
         for j,k in ti.ndrange((0,ny),(0,nz)):
             if (solid[0,j,k]==0):
-                for s in range(19):
+                for s in ti.static(range(19)):
                     #F[0,j,k][s]=feq(LR[s], 1.0, bc_vel_x_left[None])-F[0,j,k,LR[s]]+feq(s,1.0,bc_vel_x_left[None])  #!!!!!!change velocity in feq into vector
                     F[0,j,k][s]=feq(s,1.0,bc_vel_x_left[None])
 
     if ti.static(bc_x_right==1):
         for j,k in ti.ndrange((0,ny),(0,nz)):
             if (solid[nx-1,j,k]==0):
-                for s in range(19):
+                for s in ti.static(range(19)):
                     if (solid[nx-2,j,k]>0):
                         F[nx-1,j,k][s]=feq(s, rho_bcxr, v[nx-2,j,k])
                     else:
@@ -273,7 +259,7 @@ def Boundary_condition():
     if ti.static(bc_x_right==2):
         for j,k in ti.ndrange((0,ny),(0,nz)):
             if (solid[nx-1,j,k]==0):
-                for s in range(19):
+                for s in ti.static(range(19)):
                     #F[nx-1,j,k][s]=feq(LR[s], 1.0, bc_vel_x_right[None])-F[nx-1,j,k,LR[s]]+feq(s,1.0,bc_vel_x_right[None])  #!!!!!!change velocity in feq into vector
                     F[nx-1,j,k][s]=feq(s,1.0,bc_vel_x_right[None])
 
@@ -287,13 +273,8 @@ def streaming3():
             f[i] = F[i]
             rho[i] += f[i].sum()
 
-            for s in range(19):
+            for s in ti.static(range(19)):
                 v[i] += e_f[s]*f[i][s]
-
-            #for s in ti.static(range(19)):
-            #    f[i][s] = F[i][s]
-            #    rho[i] += f[i,s]
-            #    v[i] += e_f[s]*f[i,s]
             
             v[i] /= rho[i]
             v[i] += (ext_f[None]/2)/rho[i]
@@ -316,7 +297,7 @@ static_init()
 init()
 print(bc_vel_x_right[None])
 
-for iter in range(10000+1):
+for iter in range(50000+1):
     colission()
     streaming1()
     Boundary_condition()
@@ -337,7 +318,7 @@ for iter in range(10000+1):
         print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
         print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, 10.0,  10.0))
         
-        if (iter%2000==0):
+        if (iter%10000==0):
             gridToVTK(
                 "./structured"+str(iter),
                 x,
