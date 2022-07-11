@@ -340,5 +340,5 @@ for iter in range(50000+1):
 #ti.print_profile_info()
 #ti.profiler.print_kernel_profiler_info()  # default mode: 'count'
 
-ti.profiler.print_kernel_profiler_info('trace')
-ti.profiler.clear_kernel_profiler_info()  # clear all records
+#ti.profiler.print_kernel_profiler_info('trace')
+#ti.profiler.clear_kernel_profiler_info()  # clear all records
