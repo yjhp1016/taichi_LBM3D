@@ -1,16 +1,16 @@
 # NOTE: THIS CODE NEED taichi_glsl, so please use taichi version <=0.8.5
 import taichi as ti
 import numpy as np
-import taichi_glsl as ts
+#import taichi_glsl as ts
 from pyevtk.hl import gridToVTK
 import time
-from taichi_glsl import scalar
+#from taichi_glsl import scalar
 
-from taichi_glsl.scalar import isinf, isnan
-from taichi_glsl.vector import vecFill
+#from taichi_glsl.scalar import isinf, isnan
+#from taichi_glsl.vector import vecFill
 
 ti.init(arch=ti.cpu)
-#ti.init(arch=ti.gpu)
+#ti.init(arch=ti.gpu, dynamic_index=True,offline_cache=True)
 
 
 enable_projection = True
@@ -160,8 +160,10 @@ X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
 
 @ti.func
 def feq(k,rho_local, u):
-    eu=ts.vector.dot(e[k],u)
-    uv=ts.vector.dot(u,u)
+    # eu=ts.vector.dot(e[k],u)
+    # uv=ts.vector.dot(u,u)
+    eu = e[k].dot(u)
+    uv = u.dot(u)
     feqout = w[k]*rho_local*(1.0+3.0*eu+4.5*eu*eu-1.5*uv)
     #print(k, rho_local, w[k])
     return feqout
@@ -255,7 +257,8 @@ def meq_vec(rho_local,u):
 
 @ti.func
 def Compute_C(i):
-    C = ts.vecFill(3,0.0)
+    # C = ts.vecFill(3,0.0)
+    C = ti.Vector([0.0,0.0,0.0])
     ind_S = 0
     for s in ti.static(range(19)):
         ip = periodic_index_for_psi(i+e[s])
@@ -266,7 +269,8 @@ def Compute_C(i):
             C += 3.0*w[s]*e_f[s]*psi_solid
 
     if (abs(rho_r[i]-rho_b[i]) > 0.9) and (ind_S == 1):
-        C = ts.vecFill(3,0.0)
+        # C = ts.vecFill(3,0.0)
+        C = ti.Vector([0.0,0.0,0.0])
     
     return C
 
@@ -285,7 +289,8 @@ def Compute_S_local(id):
             sv=lg0+g1*psi[id]+g2*psi[id]*psi[id]
     sother = 8.0*(2.0-sv)/(8.0-sv)
 
-    S = ts.vecFill(19,0.0)
+    #S = ts.vecFill(19,0.0)
+    S = ti.Vector([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
     S[1]=sv;S[2]=sv;S[4]=sother;S[6]=sother;S[8]=sother;S[9]=sv;
     S[10]=sv;S[11]=sv;S[12]=sv;S[13]=sv;S[14]=sv;S[15]=sv;S[16]=sother;
     S[17]=sother;S[18]=sother;
@@ -327,8 +332,10 @@ def colission():
                 #m_temp[s] -= S_dig[s]*(m_temp[s]-meq[s])
                 #m_temp[s] += (1-0.5*S_dig[s])*GuoF(i,j,k,s,v[i,j,k])
             
-            g_r = ts.vecFill(19,0.0)
-            g_b = ts.vecFill(19,0.0)
+            # g_r = ts.vecFill(19,0.0)
+            # g_b = ts.vecFill(19,0.0)
+            g_r = ti.Vector([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+            g_b = ti.Vector([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
 
             for s in ti.static(range(19)):
                 f[i,j,k,s] = 0
@@ -343,7 +350,8 @@ def colission():
 
             if (cc>0):
                 for kk in ti.static([1,3,5,7,9,11,13,15,17]):
-                    ef=ts.vector.dot(e[kk],C)
+                    # ef=ts.vector.dot(e[kk],C)
+                    ef=e[kk].dot(C)
                     cospsi= g_r[kk] if (g_r[kk]<g_r[kk+1]) else g_r[kk+1]
                     cospsi= cospsi if (cospsi<g_b[kk]) else g_b[kk]
                     cospsi=cospsi if (cospsi<g_b[kk+1]) else g_b[kk+1]
@@ -518,7 +526,7 @@ def Boundary_condition():
             if (solid[i,0,k]==0):
                 for s in ti.static(range(19)):
                     if (solid[i,1,k]>0):
-                        F[i,0,k,s]=feq(s, rho_bcyl, v[i,0,k])
+                        F[i,0,k,s]=feq(s, rho_bcyl, v[i,1,k])
                     else:
                         F[i,0,k,s]=feq(s, rho_bcyl, v[i,0,k])
 
