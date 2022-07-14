@@ -301,14 +301,14 @@ static_init()
 init()
 
 
-for iter in range(500+1):
+for iter in range(50000+1):
     colission()
     streaming1()
     Boundary_condition()
     #streaming2()
     streaming3()
 
-    if (iter%100==0):
+    if (iter%1000==0):
 
         time_pre = time_now
         time_now = time.time()
@@ -322,17 +322,18 @@ for iter in range(500+1):
         print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
         print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, 10.0,  10.0))
 
-        gridToVTK(
-            "./structured"+str(iter),
-            x,
-            y,
-            z,
-            #cellData={"pressure": pressure},
-            pointData={ "Solid": np.ascontiguousarray(solid.to_numpy()),
-                        "rho": np.ascontiguousarray(rho.to_numpy()),
-                        "velocity": (np.ascontiguousarray(v.to_numpy()[:,:,:,0]), np.ascontiguousarray(v.to_numpy()[:,:,:,1]),np.ascontiguousarray(v.to_numpy()[:,:,:,2]))
-                        }
-        )
+        if (iter%10000==0):
+            gridToVTK(
+                "./structured"+str(iter),
+                x,
+                y,
+                z,
+                #cellData={"pressure": pressure},
+                pointData={ "Solid": np.ascontiguousarray(solid.to_numpy()),
+                            "rho": np.ascontiguousarray(rho.to_numpy()),
+                            "velocity": (np.ascontiguousarray(v.to_numpy()[:,:,:,0]), np.ascontiguousarray(v.to_numpy()[:,:,:,1]),np.ascontiguousarray(v.to_numpy()[:,:,:,2]))
+                            }
+            )
 # ti.sync()
 # ti.profiler.print_kernel_profiler_info()
 ti.profiler.print_scoped_profiler_info()

@@ -7,7 +7,7 @@ import time
 ti.init(arch=ti.cuda, dynamic_index=False, kernel_profiler=True, print_ir=False)
 
 enable_projection = True
-nx,ny,nz = 50,50,50
+nx,ny,nz = 120,120,120
 #nx,ny,nz = 120,120,120
 fx,fy,fz = 0.0e-6,0.0,0.0
 niu = 0.16667
@@ -26,20 +26,13 @@ F = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
 rho = ti.field(ti.f32, shape=(nx,ny,nz))
 v = ti.Vector.field(3,ti.f32, shape=(nx,ny,nz))
 e = ti.Vector.field(3,ti.i32, shape=(19))
-#S_dig = ti.field(ti.f32,shape=(19))
 S_dig = ti.Vector.field(19,ti.f32,shape=())
 e_f = ti.Vector.field(3,ti.f32, shape=(19))
 w = ti.field(ti.f32, shape=(19))
 solid = ti.field(ti.i32,shape=(nx,ny,nz))
-#LR = ti.field(ti.i32,shape=(19))
 
 ext_f = ti.Vector.field(3,ti.f32,shape=())
-bc_vel_x_left = ti.Vector.field(3,ti.f32, shape=())
-bc_vel_x_right = ti.Vector.field(3,ti.f32, shape=())
-bc_vel_y_left = ti.Vector.field(3,ti.f32, shape=())
-bc_vel_y_right = ti.Vector.field(3,ti.f32, shape=())
-bc_vel_z_left = ti.Vector.field(3,ti.f32, shape=())
-bc_vel_z_right = ti.Vector.field(3,ti.f32, shape=())
+
 
 M = ti.Matrix.field(19, 19, ti.f32, shape=())
 inv_M = ti.Matrix.field(19,19,ti.f32, shape=())
@@ -86,20 +79,11 @@ M_np = np.array([[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 [0,0,0,0,0,0,0,0,0,0,0,1,-1,-1,1,-1,1,1,-1]])
 inv_M_np = np.linalg.inv(M_np)
 
-LR_np = np.array([0,2,1,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17])
-#w = [1.0/3.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 
-#    1.0/36.0,1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0]
-
-
-#M.from_numpy(M_np)
-#inv_M.from_numpy(inv_M_np)
 
 M[None] = ti.Matrix(M_np)
 inv_M[None] = ti.Matrix(inv_M_np)
 S_dig[None] = ti.Vector(S_dig_np)
 
-
-#LR.from_numpy(LR_np)
 
 ext_f[None] = ti.Vector([fx,fy,fz])
 if ((abs(fx)>0) or (abs(fx)>0) or (abs(fx)>0)):
@@ -167,13 +151,6 @@ def static_init():
     w[7] = 1.0/36.0; w[8] = 1.0/36.0; w[9] = 1.0/36.0; w[10] = 1.0/36.0; w[11] = 1.0/36.0; w[12] = 1.0/36.0; 
     w[13] = 1.0/36.0; w[14] = 1.0/36.0; w[15] = 1.0/36.0; w[16] = 1.0/36.0; w[17] = 1.0/36.0; w[18] = 1.0/36.0;
 
-    #bc_vel_x_left[None] = ti.Vector([vx_bcxl, vy_bcxl, vz_bcxl])
-    #bc_vel_x_right[None] = ti.Vector([vx_bcxr, vy_bcxr, vz_bcxr])
-    #bc_vel_y_left[None] = ti.Vector([vx_bcyl, vy_bcyl, vz_bcyl])
-    #bc_vel_y_right[None] = ti.Vector([vx_bcyr, vy_bcyr, vz_bcyr])
-    #bc_vel_z_left[None] = ti.Vector([vx_bczl, vy_bczl, vz_bczl])
-    #bc_vel_z_right[None] = ti.Vector([vx_bczr, vy_bczr, vz_bczr])
-
 
 @ti.func
 def GuoF(i,j,k,s,u):
@@ -236,13 +213,7 @@ def streaming1():
                 else:
                     F[i][LR[s]] = f[i][s]
                     #print(i, ip, "@@@")
-        #else:
-            #LR_np = np.array([0,2,1,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17])
-        #    F[i][0] = f[i][0];F[i][6] = f[i][5];F[i][9] = f[i][10];F[i][16] = f[i][15];
-        #    F[i][2] = f[i][1];F[i][5] = f[i][6];F[i][12] = f[i][11];F[i][15] = f[i][16];
-        #    F[i][1] = f[i][2];F[i][8] = f[i][7];F[i][11] = f[i][12];F[i][18] = f[i][17];
-        #    F[i][4] = f[i][3];F[i][7] = f[i][8];F[i][14] = f[i][13];F[i][17] = f[i][18];
-        #    F[i][3] = f[i][4];F[i][10] = f[i][9];F[i][13] = f[i][14];
+
 
 @ti.kernel
 def Boundary_condition():
