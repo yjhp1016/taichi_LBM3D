@@ -78,3 +78,19 @@ Liang Yang @ly16302
 
 ## License 
 MIT
+
+## Citations
+If you use Taichi-LBM3D in your research, please cite the corresponding paper:
+
+    @Article{fluids7080270,
+     AUTHOR = {Yang, Jianhui and Xu, Yi and Yang, Liang},
+     TITLE = {Taichi-LBM3D: A Single-Phase and Multiphase Lattice Boltzmann Solver on Cross-Platform Multicore CPU/GPUs},
+     JOURNAL = {Fluids},
+     VOLUME = {7},
+     YEAR = {2022},
+     NUMBER = {8},
+     ARTICLE-NUMBER = {270},
+     URL = {https://www.mdpi.com/2311-5521/7/8/270},
+     ISSN = {2311-5521},
+     DOI = {10.3390/fluids7080270}
+    }
