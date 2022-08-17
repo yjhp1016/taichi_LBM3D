@@ -94,3 +94,8 @@ If you use Taichi-LBM3D in your research, please cite the corresponding paper:
      ISSN = {2311-5521},
      DOI = {10.3390/fluids7080270}
     }
+    
+### To do list:
+- wrap functions into class to faciliate direct use from users
+- Modify single phase gray scale and two phase data structure to improve computing efficiency (single phase code is done)
+- Packing through pip
