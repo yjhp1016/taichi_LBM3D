@@ -1,12 +1,15 @@
-import LBM_3D_SinglePhase_Solver as lb3dsp 
 import time
+import taichi as ti
+
+ti.init(arch=ti.cpu, dynamic_index=False, kernel_profiler=False, print_ir=False)
+import LBM_3D_SinglePhase_Solver as lb3dsp
 
 time_init = time.time()
 time_now = time.time()
 time_pre = time.time()             
 
 
-lb3d = lb3dsp.LB3D_Solver_Single_Phase(50,50,50)
+lb3d = lb3dsp.LB3D_Solver_Single_Phase(nx=50,ny=50,nz=50)
 
 lb3d.init_geo('./geo_cavity.dat')
 lb3d.set_bc_vel_x1([0.0,0.0,0.1])

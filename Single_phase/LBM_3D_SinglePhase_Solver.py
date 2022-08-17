@@ -4,7 +4,7 @@ import numpy as np
 from pyevtk.hl import gridToVTK
 import time
 
-ti.init(arch=ti.cuda, dynamic_index=False, kernel_profiler=True, print_ir=False)
+#ti.init(arch=ti.gpu, dynamic_index=False, kernel_profiler=True, print_ir=False)
 
 @ti.data_oriented
 class LB3D_Solver_Single_Phase:
