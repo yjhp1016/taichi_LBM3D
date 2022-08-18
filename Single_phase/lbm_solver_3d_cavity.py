@@ -4,10 +4,10 @@ import numpy as np
 from pyevtk.hl import gridToVTK
 import time
 
-ti.init(arch=ti.cuda, dynamic_index=False, kernel_profiler=True, print_ir=False)
+ti.init(arch=ti.gpu, dynamic_index=False, kernel_profiler=True, print_ir=False)
 
 enable_projection = True
-nx,ny,nz = 120,120,120
+nx,ny,nz = 50,50,50
 #nx,ny,nz = 120,120,120
 fx,fy,fz = 0.0e-6,0.0,0.0
 niu = 0.16667

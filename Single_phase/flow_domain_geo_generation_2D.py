@@ -6,7 +6,7 @@ import math
 output_name = 'geo_cavity.dat'
 
 
-dnx, dny, dnz = 120, 120, 120
+dnx, dny, dnz = 50, 50, 50
 
 #==========================================================
 #           DO NOT CHANGE BELOW
