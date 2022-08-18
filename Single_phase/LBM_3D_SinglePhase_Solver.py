@@ -305,16 +305,16 @@ class LB3D_Solver_Single_Phase:
             )   
 
     def step(self):
-        lb3d.colission()
-        lb3d.streaming1()
-        lb3d.Boundary_condition()
-        lb3d.streaming3()
+        self.colission()
+        self.streaming1()
+        self.Boundary_condition()
+        self.streaming3()
 
 
 
 
 
-
+'''
 time_init = time.time()
 time_now = time.time()
 time_pre = time.time()
@@ -357,3 +357,5 @@ for iter in range(50000+1):
 
 #ti.profiler.print_kernel_profiler_info('trace')
 #ti.profiler.clear_kernel_profiler_info()  # clear all records
+
+'''
