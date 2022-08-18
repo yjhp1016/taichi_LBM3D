@@ -250,7 +250,7 @@ class LB3D_Solver_Single_Phase:
 
         if ti.static(self.bc_x_right==1):
             for j,k in ti.ndrange((0,self.ny),(0,self.nz)):
-                if (self.solid[nx-1,j,k]==0):
+                if (self.solid[self.nx-1,j,k]==0):
                     for s in ti.static(range(19)):
                         if (self.solid[self.nx-2,j,k]>0):
                             self.F[self.nx-1,j,k][s]=self.feq(s, self.rho_bcxr, self.v[self.nx-2,j,k])
@@ -264,6 +264,71 @@ class LB3D_Solver_Single_Phase:
                         #F[nx-1,j,k][s]=feq(LR[s], 1.0, bc_vel_x_right[None])-F[nx-1,j,k,LR[s]]+feq(s,1.0,bc_vel_x_right[None])  #!!!!!!change velocity in feq into vector
                         self.F[self.nx-1,j,k][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_x_right))
 
+         # Direction Y
+        if ti.static(self.bc_y_left==1):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,0,k]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,1,k]>0):
+                            self.F[i,0,k][s]=self.feq(s, self.rho_bcyl, self.v[i,1,k])
+                        else:
+                            self.F[i,0,k][s]=self.feq(s, self.rho_bcyl, self.v[i,0,k])
+
+        if ti.static(self.bc_y_left==2):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,0,k]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,0,k][s]=self.feq(self.LR[s], 1.0, self.bc_vel_y_left[None])-self.F[i,0,k][LR[s]]+self.feq(s,1.0,self.bc_vel_y_left[None])
+                        self.F[i,0,k][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_y_left))  
+
+        if ti.static(self.bc_y_right==1):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,self.ny-1,k]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,self.ny-2,k]>0):
+                            self.F[i,self.ny-1,k][s]=self.feq(s, self.rho_bcyr, self.v[i,self.ny-2,k])
+                        else:
+                            self.F[i,self.ny-1,k][s]=self.feq(s, self.rho_bcyr, self.v[i,self.ny-1,k])
+
+        if ti.static(self.bc_y_right==2):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,self.ny-1,k]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,self.ny-1,k][s]=self.feq(self.LR[s], 1.0, self.bc_vel_y_right[None])-self.F[i,self.ny-1,k][self.LR[s]]+self.feq(s,1.0,self.bc_vel_y_right[None]) 
+                        self.F[i,self.ny-1,k][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_y_right))
+
+        # Z direction
+        if ti.static(self.bc_z_left==1):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,0]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,j,1]>0):
+                            self.F[i,j,0][s]=self.feq(s, self.rho_bczl, self.v[i,j,1])
+                        else:
+                            self.F[i,j,0][s]=self.feq(s, self.rho_bczl, self.v[i,j,0])
+
+        if ti.static(self.bc_z_left==2):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,0]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,j,0][s]=self.feq(self.LR[s], 1.0, self.bc_vel_z_left[None])-self.F[i,j,0][self.LR[s]]+self.feq(s,1.0,self.bc_vel_z_left[None])  
+                        self.F[i,j,0][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_z_left))
+
+        if ti.static(self.bc_z_right==1):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,self.nz-1]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,j,self.nz-2]>0):
+                            self.F[i,j,self.nz-1,s]=self.feq(s, self.rho_bczr, self.v[i,j,self.nz-2])
+                        else:
+                            self.F[i,j,self.nz-1][s]=self.feq(s, self.rho_bczr, self.v[i,j,self.nz-1])
+
+        if ti.static(self.bc_z_right==2):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,self.nz-1]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,j,self.nz-1][s]=self.feq(self.LR[s], 1.0, self.bc_vel_z_right[None])-self.F[i,j,self.nz-1][self.LR[s]]+self.feq(s,1.0,self.bc_vel_z_right[None]) 
+                        self.F[i,j,self.nz-1][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_z_right))
 
     @ti.kernel
     def streaming3(self):
@@ -288,8 +353,58 @@ class LB3D_Solver_Single_Phase:
         self.bc_x_right = 2
         self.vx_bcxr = vel[0]; self.vy_bcxr = vel[1]; self.vz_bcxr = vel[2];
 
+    def set_bc_vel_x0(self, vel):
+        self.bc_x_left = 2
+        self.vx_bcxl = vel[0]; self.vy_bcxl = vel[1]; self.vz_bcxl = vel[2];
+
+    def set_bc_vel_y1(self, vel):
+        self.bc_y_right = 2
+        self.vx_bcyr = vel[0]; self.vy_bcyr = vel[1]; self.vz_bcyr = vel[2];
+
+    def set_bc_vel_y0(self, vel):
+        self.bc_y_left = 2
+        self.vx_bcyl = vel[0]; self.vy_bcyl = vel[1]; self.vz_bcyl = vel[2];
+
+    def set_bc_vel_z1(self, vel):
+        self.bc_z_right = 2
+        self.vx_bczr = vel[0]; self.vy_bczr = vel[1]; self.vz_bczr = vel[2];
+
+    def set_bc_vel_z0(self, vel):
+        self.bc_z_left = 2
+        self.vx_bczl = vel[0]; self.vy_bczl = vel[1]; self.vz_bczl = vel[2];  
+
+    def set_bc_rho_x0(self, rho):
+        self.bc_x_left = 1
+        self.rho_bcxl = rho
+    
+    def set_bc_rho_x1(self, rho):
+        self.bc_x_right = 1
+        self.rho_bcxr = rho
+
+    def set_bc_rho_y0(self, rho):
+        self.bc_y_left = 1
+        self.rho_bcyl = rho
+    
+    def set_bc_rho_y1(self, rho):
+        self.bc_y_right = 1
+        self.rho_bcyr = rho
+    
+    def set_bc_rho_z0(self, rho):
+        self.bc_z_left = 1
+        self.rho_bczl = rho
+    
+    def set_bc_rho_z1(self, rho):
+        self.bc_z_right = 1
+        self.rho_bczr = rho
+
+
     def set_viscosity(self,niu):
         self.niu = niu
+
+    def set_force(self,force):
+        self.fx = force[0]; self.fy = force[1]; self.fz = force[2];
+
+
 
     def export_VTK(self, n):
         gridToVTK(
