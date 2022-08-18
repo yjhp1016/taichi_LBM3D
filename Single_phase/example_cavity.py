@@ -1,7 +1,7 @@
 import time
 import taichi as ti
 
-ti.init(arch=ti.cpu, dynamic_index=False, kernel_profiler=False, print_ir=False)
+ti.init(arch=ti.gpu, dynamic_index=False, kernel_profiler=False, print_ir=False)
 import LBM_3D_SinglePhase_Solver as lb3dsp
 
 time_init = time.time()
@@ -32,6 +32,6 @@ for iter in range(50000+1):
         print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
         print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, 10.0,  10.0))
         
-        if (iter%10000==0):
+        if (iter%5000==0):
             lb3d.export_VTK(iter)
             
