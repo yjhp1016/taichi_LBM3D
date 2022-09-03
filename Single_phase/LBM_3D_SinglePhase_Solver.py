@@ -121,6 +121,9 @@ class LB3D_Solver_Single_Phase:
         #ti.static(LR)
         ti.static(self.S_dig)
 
+        self.static_init()
+        self.init()
+
 
     @ti.func
     def feq(self, k,rho_local, u):
@@ -326,8 +329,7 @@ lb3d = LB3D_Solver_Single_Phase(50,50,50)
 lb3d.init_geo('./geo_cavity.dat')
 lb3d.set_bc_vel_x1([0.0,0.0,0.1])
 lb3d.init_simulation()
-lb3d.static_init()
-lb3d.init()
+
 
 for iter in range(50000+1):
     lb3d.step()
