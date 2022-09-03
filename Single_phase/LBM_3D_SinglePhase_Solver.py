@@ -4,17 +4,20 @@ import numpy as np
 from pyevtk.hl import gridToVTK
 import time
 
-ti.init(arch=ti.cuda, dynamic_index=False, kernel_profiler=True, print_ir=False)
+#ti.init(arch=ti.gpu, dynamic_index=False, kernel_profiler=True, print_ir=False)
 
 @ti.data_oriented
 class LB3D_Solver_Single_Phase:
-    def __init__(self, nx, ny, nz):
+    def __init__(self, nx, ny, nz, sparse_storage = False):
 
         self.enable_projection = True
+        self.sparse_storage = sparse_storage
         self.nx,self.ny,self.nz = nx,ny,nz
         #nx,ny,nz = 120,120,120
         self.fx,self.fy,self.fz = 0.0e-6,0.0,0.0
         self.niu = 0.16667
+
+        self.max_v=ti.field(ti.f32,shape=())
 
         #Boundary condition mode: 0=periodic, 1= fix pressure, 2=fix velocity; boundary pressure value (rho); boundary velocity value for vx,vy,vz
         self.bc_x_left, self.rho_bcxl, self.vx_bcxl, self.vy_bcxl, self.vz_bcxl = 0, 1.0, 0.0e-5, 0.0, 0.0  #Boundary x-axis left side
@@ -25,16 +28,33 @@ class LB3D_Solver_Single_Phase:
         self.bc_z_right, self.rho_bczr, self.vx_bczr, self.vy_bczr, self.vz_bczr = 0, 1.0, 0.0, 0.0, 0.0  #Boundary x-axis left side
 
 
-        self.f = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
-        self.F = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
-        self.rho = ti.field(ti.f32, shape=(nx,ny,nz))
-        self.v = ti.Vector.field(3,ti.f32, shape=(nx,ny,nz))
+        if sparse_storage == False:
+            self.f = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
+            self.F = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
+            self.rho = ti.field(ti.f32, shape=(nx,ny,nz))
+            self.v = ti.Vector.field(3,ti.f32, shape=(nx,ny,nz))
+        else:
+            self.f = ti.Vector.field(19, ti.f32)
+            self.F = ti.Vector.field(19,ti.f32)
+            self.rho = ti.field(ti.f32)
+            self.v = ti.Vector.field(3, ti.f32)
+            n_mem_partition = 3
+
+            cell1 = ti.root.pointer(ti.ijk, (nx//n_mem_partition+1,ny//n_mem_partition+1,nz//n_mem_partition+1))
+            cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(self.rho, self.v, self.f, self.F)
+            #cell1.dense(ti.ijk, (n_mem_partition,n_mem_partition,n_mem_partition)).place(self.v)
+
+            #cell2 = ti.root.pointer(ti.ijk,(nx//3+1,ny//3+1,nz//3+1))
+            #cell2.dense(ti.ijk,(n_mem_partition,n_mem_partition,n_mem_partition)).place(self.f)
+            #cell2.dense(ti.ijk,(n_mem_partition,n_mem_partition,n_mem_partition)).place(self.F)
+        
+        
+        
         self.e = ti.Vector.field(3,ti.i32, shape=(19))
         self.S_dig = ti.Vector.field(19,ti.f32,shape=())
         self.e_f = ti.Vector.field(3,ti.f32, shape=(19))
         self.w = ti.field(ti.f32, shape=(19))
-        self.solid = ti.field(ti.i32,shape=(nx,ny,nz))
-
+        self.solid = ti.field(ti.i8,shape=(nx,ny,nz))
         self.ext_f = ti.Vector.field(3,ti.f32,shape=())
 
 
@@ -135,17 +155,20 @@ class LB3D_Solver_Single_Phase:
 
     @ti.kernel
     def init(self):
-        for i,j,k in self.rho:
-            self.rho[i,j,k] = 1.0
-            self.v[i,j,k] = ti.Vector([0,0,0])
-            for s in ti.static(range(19)):
-                self.f[i,j,k][s] = self.feq(s,1.0,self.v[i,j,k])
-                self.F[i,j,k][s] = self.feq(s,1.0,self.v[i,j,k])
-                #print(F[i,j,k,s], feq(s,1.0,v[i,j,k]))
+        for i,j,k in self.solid:
+            #print(i,j,k)
+            if (self.sparse_storage==False or self.solid[i,j,k]==0):
+                self.rho[i,j,k] = 1.0
+                self.v[i,j,k] = ti.Vector([0,0,0])
+                for s in ti.static(range(19)):
+                    self.f[i,j,k][s] = self.feq(s,1.0,self.v[i,j,k])
+                    self.F[i,j,k][s] = self.feq(s,1.0,self.v[i,j,k])
+                    #print(F[i,j,k,s], feq(s,1.0,v[i,j,k]))
 
    
     def init_geo(self,filename):
         in_dat = np.loadtxt(filename)
+        in_dat[in_dat>0] = 1
         in_dat = np.reshape(in_dat, (self.nx,self.ny,self.nz),order='F')
         self.solid.from_numpy(in_dat)
         
@@ -192,7 +215,7 @@ class LB3D_Solver_Single_Phase:
     @ti.kernel
     def colission(self):
         for i,j,k in self.rho:
-            if (self.solid[i,j,k] == 0):
+            if (self.solid[i,j,k] == 0 and i<self.nx and j<self.ny and k<self.nz):
                 m_temp = self.M[None]@self.F[i,j,k]
                 meq = self.meq_vec(self.rho[i,j,k],self.v[i,j,k])
                 m_temp -= self.S_dig[None]*(m_temp-meq)
@@ -223,7 +246,7 @@ class LB3D_Solver_Single_Phase:
     @ti.kernel
     def streaming1(self):
         for i in ti.grouped(self.rho):
-            if (self.solid[i] == 0):
+            if (self.solid[i] == 0 and i.x<self.nx and i.y<self.ny and i.z<self.nz):
                 for s in ti.static(range(19)):
                     ip = self.periodic_index(i+self.e[s])
                     if (self.solid[ip]==0):
@@ -253,7 +276,7 @@ class LB3D_Solver_Single_Phase:
 
         if ti.static(self.bc_x_right==1):
             for j,k in ti.ndrange((0,self.ny),(0,self.nz)):
-                if (self.solid[nx-1,j,k]==0):
+                if (self.solid[self.nx-1,j,k]==0):
                     for s in ti.static(range(19)):
                         if (self.solid[self.nx-2,j,k]>0):
                             self.F[self.nx-1,j,k][s]=self.feq(s, self.rho_bcxr, self.v[self.nx-2,j,k])
@@ -267,11 +290,77 @@ class LB3D_Solver_Single_Phase:
                         #F[nx-1,j,k][s]=feq(LR[s], 1.0, bc_vel_x_right[None])-F[nx-1,j,k,LR[s]]+feq(s,1.0,bc_vel_x_right[None])  #!!!!!!change velocity in feq into vector
                         self.F[self.nx-1,j,k][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_x_right))
 
+         # Direction Y
+        if ti.static(self.bc_y_left==1):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,0,k]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,1,k]>0):
+                            self.F[i,0,k][s]=self.feq(s, self.rho_bcyl, self.v[i,1,k])
+                        else:
+                            self.F[i,0,k][s]=self.feq(s, self.rho_bcyl, self.v[i,0,k])
+
+        if ti.static(self.bc_y_left==2):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,0,k]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,0,k][s]=self.feq(self.LR[s], 1.0, self.bc_vel_y_left[None])-self.F[i,0,k][LR[s]]+self.feq(s,1.0,self.bc_vel_y_left[None])
+                        self.F[i,0,k][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_y_left))  
+
+        if ti.static(self.bc_y_right==1):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,self.ny-1,k]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,self.ny-2,k]>0):
+                            self.F[i,self.ny-1,k][s]=self.feq(s, self.rho_bcyr, self.v[i,self.ny-2,k])
+                        else:
+                            self.F[i,self.ny-1,k][s]=self.feq(s, self.rho_bcyr, self.v[i,self.ny-1,k])
+
+        if ti.static(self.bc_y_right==2):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                if (self.solid[i,self.ny-1,k]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,self.ny-1,k][s]=self.feq(self.LR[s], 1.0, self.bc_vel_y_right[None])-self.F[i,self.ny-1,k][self.LR[s]]+self.feq(s,1.0,self.bc_vel_y_right[None]) 
+                        self.F[i,self.ny-1,k][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_y_right))
+
+        # Z direction
+        if ti.static(self.bc_z_left==1):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,0]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,j,1]>0):
+                            self.F[i,j,0][s]=self.feq(s, self.rho_bczl, self.v[i,j,1])
+                        else:
+                            self.F[i,j,0][s]=self.feq(s, self.rho_bczl, self.v[i,j,0])
+
+        if ti.static(self.bc_z_left==2):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,0]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,j,0][s]=self.feq(self.LR[s], 1.0, self.bc_vel_z_left[None])-self.F[i,j,0][self.LR[s]]+self.feq(s,1.0,self.bc_vel_z_left[None])  
+                        self.F[i,j,0][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_z_left))
+
+        if ti.static(self.bc_z_right==1):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,self.nz-1]==0):
+                    for s in ti.static(range(19)):
+                        if (self.solid[i,j,self.nz-2]>0):
+                            self.F[i,j,self.nz-1,s]=self.feq(s, self.rho_bczr, self.v[i,j,self.nz-2])
+                        else:
+                            self.F[i,j,self.nz-1][s]=self.feq(s, self.rho_bczr, self.v[i,j,self.nz-1])
+
+        if ti.static(self.bc_z_right==2):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                if (self.solid[i,j,self.nz-1]==0):
+                    for s in ti.static(range(19)):
+                        #self.F[i,j,self.nz-1][s]=self.feq(self.LR[s], 1.0, self.bc_vel_z_right[None])-self.F[i,j,self.nz-1][self.LR[s]]+self.feq(s,1.0,self.bc_vel_z_right[None]) 
+                        self.F[i,j,self.nz-1][s]=self.feq(s,1.0,ti.Vector(self.bc_vel_z_right))
 
     @ti.kernel
     def streaming3(self):
         for i in ti.grouped(self.rho):
-            if (self.solid[i]==0):
+            #print(i.x, i.y, i.z)
+            if (self.solid[i]==0 and i.x<self.nx and i.y<self.ny and i.z<self.nz):
                 self.rho[i] = 0
                 self.v[i] = ti.Vector([0,0,0])
                 self.f[i] = self.F[i]
@@ -287,12 +376,73 @@ class LB3D_Solver_Single_Phase:
                 self.rho[i] = 1.0
                 self.v[i] = ti.Vector([0,0,0])
     
+    def get_max_v(self):
+        self.max_v[None] = -1e10
+        self.cal_max_v()
+        return self.max_v[None]
+
+    @ti.kernel
+    def cal_max_v(self):
+        for I in ti.grouped(self.rho):
+            ti.atomic_max(self.max_v[None], self.v[I].norm())
+
+    
     def set_bc_vel_x1(self, vel):
         self.bc_x_right = 2
         self.vx_bcxr = vel[0]; self.vy_bcxr = vel[1]; self.vz_bcxr = vel[2];
 
+    def set_bc_vel_x0(self, vel):
+        self.bc_x_left = 2
+        self.vx_bcxl = vel[0]; self.vy_bcxl = vel[1]; self.vz_bcxl = vel[2];
+
+    def set_bc_vel_y1(self, vel):
+        self.bc_y_right = 2
+        self.vx_bcyr = vel[0]; self.vy_bcyr = vel[1]; self.vz_bcyr = vel[2];
+
+    def set_bc_vel_y0(self, vel):
+        self.bc_y_left = 2
+        self.vx_bcyl = vel[0]; self.vy_bcyl = vel[1]; self.vz_bcyl = vel[2];
+
+    def set_bc_vel_z1(self, vel):
+        self.bc_z_right = 2
+        self.vx_bczr = vel[0]; self.vy_bczr = vel[1]; self.vz_bczr = vel[2];
+
+    def set_bc_vel_z0(self, vel):
+        self.bc_z_left = 2
+        self.vx_bczl = vel[0]; self.vy_bczl = vel[1]; self.vz_bczl = vel[2];  
+
+    def set_bc_rho_x0(self, rho):
+        self.bc_x_left = 1
+        self.rho_bcxl = rho
+    
+    def set_bc_rho_x1(self, rho):
+        self.bc_x_right = 1
+        self.rho_bcxr = rho
+
+    def set_bc_rho_y0(self, rho):
+        self.bc_y_left = 1
+        self.rho_bcyl = rho
+    
+    def set_bc_rho_y1(self, rho):
+        self.bc_y_right = 1
+        self.rho_bcyr = rho
+    
+    def set_bc_rho_z0(self, rho):
+        self.bc_z_left = 1
+        self.rho_bczl = rho
+    
+    def set_bc_rho_z1(self, rho):
+        self.bc_z_right = 1
+        self.rho_bczr = rho
+
+
     def set_viscosity(self,niu):
         self.niu = niu
+
+    def set_force(self,force):
+        self.fx = force[0]; self.fy = force[1]; self.fz = force[2];
+
+
 
     def export_VTK(self, n):
         gridToVTK(
@@ -303,21 +453,23 @@ class LB3D_Solver_Single_Phase:
                 #cellData={"pressure": pressure},
                 pointData={ "Solid": np.ascontiguousarray(self.solid.to_numpy()),
                             "rho": np.ascontiguousarray(self.rho.to_numpy()),
-                            "velocity": (np.ascontiguousarray(self.v.to_numpy()[:,:,:,0]), np.ascontiguousarray(self.v.to_numpy()[:,:,:,1]),np.ascontiguousarray(self.v.to_numpy()[:,:,:,2]))
+                            "velocity": (   np.ascontiguousarray(self.v.to_numpy()[0:self.nx,0:self.ny,0:self.nz,0]), 
+                                            np.ascontiguousarray(self.v.to_numpy()[0:self.nx,0:self.ny,0:self.nz,1]),
+                                            np.ascontiguousarray(self.v.to_numpy()[0:self.nx,0:self.ny,0:self.nz,2]))
                             }
             )   
 
     def step(self):
-        lb3d.colission()
-        lb3d.streaming1()
-        lb3d.Boundary_condition()
-        lb3d.streaming3()
+        self.colission()
+        self.streaming1()
+        self.Boundary_condition()
+        self.streaming3()
 
 
 
 
 
-
+'''
 time_init = time.time()
 time_now = time.time()
 time_pre = time.time()
@@ -359,3 +511,5 @@ for iter in range(50000+1):
 
 #ti.profiler.print_kernel_profiler_info('trace')
 #ti.profiler.clear_kernel_profiler_info()  # clear all records
+
+'''
