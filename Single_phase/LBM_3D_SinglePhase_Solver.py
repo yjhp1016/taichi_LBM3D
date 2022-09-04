@@ -196,13 +196,13 @@ class LB3D_Solver_Single_Phase:
             self.w[13] = 1.0/36.0; self.w[14] = 1.0/36.0; self.w[15] = 1.0/36.0; self.w[16] = 1.0/36.0; self.w[17] = 1.0/36.0; self.w[18] = 1.0/36.0;
 
 
-    @ti.func
-    def GuoF(self,i,j,k,s,u):
-        out=0.0
-        for l in ti.static(range(19)):
-            out += self.w[l]*((self.e_f[l]-u).dot(self.ext_f[None])+(self.e_f[l].dot(u)*(self.e_f[l].dot(self.ext_f[None]))))*self.M[None][s,l]
-        
-        return out
+    #@ti.func
+    #def GuoF(self,i,j,k,s,u,f):
+    #    out=0.0
+    #    for l in ti.static(range(19)):
+    #        out += self.w[l]*((self.e_f[l]-u).dot(f)+(self.e_f[l].dot(u)*(self.e_f[l].dot(f))))*self.M[None][s,l]
+    #    
+    #    return out
 
 
     @ti.func
@@ -225,7 +225,12 @@ class LB3D_Solver_Single_Phase:
                 if (ti.static(self.force_flag==1)):
                     for s in ti.static(range(19)):
                     #    m_temp[s] -= S_dig[s]*(m_temp[s]-meq[s])
-                        m_temp[s] += (1-0.5*self.S_dig[None][s])*self.GuoF(i,j,k,s,self.v[i,j,k])
+                        f = ti.Vector([self.fx, self.fy, self.fz])
+                        f_guo=0.0
+                        for l in ti.static(range(19)):
+                            f_guo += self.w[l]*((self.e_f[l]-self.v[i,j,k]).dot(f)+(self.e_f[l].dot(self.v[i,j,k])*(self.e_f[l].dot(f))))*self.M[None][s,l]
+                        #m_temp[s] += (1-0.5*self.S_dig[None][s])*self.GuoF(i,j,k,s,self.v[i,j,k],force)
+                        m_temp[s] += (1-0.5*self.S_dig[None][s])*f_guo
                 
                 self.f[i,j,k] = ti.Vector([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
                 self.f[i,j,k] += self.inv_M[None]@m_temp
