@@ -129,8 +129,11 @@ class LB3D_Solver_Single_Phase:
 
         self.S_dig[None] = ti.Vector([0,self.s_v,self.s_v,0,self.s_other,0,self.s_other,0,self.s_other, self.s_v, self.s_v,self.s_v,self.s_v,self.s_v,self.s_v,self.s_v,self.s_other,self.s_other,self.s_other])
 
-        self.ext_f[None] = ti.Vector([self.fx,self.fy,self.fz])
-        if ((abs(self.fx)>0) or (abs(self.fx)>0) or (abs(self.fx)>0)):
+        #self.ext_f[None] = ti.Vector([self.fx,self.fy,self.fz])
+        self.ext_f[None][0] = self.fx
+        self.ext_f[None][1] = self.fy
+        self.ext_f[None][2] = self.fz 
+        if ((abs(self.fx)>0) or (abs(self.fy)>0) or (abs(self.fz)>0)):
             self.force_flag = 1
         else:
             self.force_flag = 0
