@@ -63,6 +63,14 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     def init_H(self):
         for I in ti.grouped(self.rho_T):
             self.rho_H[I] = self.convert_T_H(self.rho_T[I])
+    
+    
+    @ti.kernel
+    def init_fg(self):
+        for I in ti.grouped(self.fg):
+            Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
+            for s in ti.static(range(19)):
+                self.fg[I][s] = self.g_feq(s,self.rho_T[I],self.rho_H[I], Cp, self.v[I])
 
     @ti.kernel
     def init_fl(self):
@@ -73,12 +81,12 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     def g_feq(self, k,local_T,local_H, Cp, u):
         eu = self.e[k].dot(u)
         uv = u.dot(u)
-        feqout = 0
+        feqout = 0.0
         if (k==0):
             feqout = local_H-Cp*local_T+self.w[k]*Cp*local_T*(1-1.5*uv)
         else:
             feqout = self.w[k]*Cp*local_T*(1.0+3.0*eu+4.5*eu*eu-1.5*uv)
-        #print(k, rho_local, self.w[k])
+        #print(k, self.w[k], feqout, Cp, local_T)
         return feqout
 
     @ti.kernel
@@ -87,7 +95,9 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
             tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
             Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
             for s in ti.static(range(19)):
-                self.fg[I][s] += -1.0/tau_s*(self.fg[I][s]-self.g_feq(s,self.rho_T[I],self.rho_H[I], Cp, self.v[I]))
+                tmp_fg = -1.0/tau_s*(self.fg[I][s]-self.g_feq(s,self.rho_T[I],self.rho_H[I], Cp, self.v[I]))
+                #print(self.fg[I][s],tmp_fg,I,s,self.rho_H[I],self.g_feq(s,self.rho_T[I],self.rho_H[I], Cp, self.v[I]))
+                self.fg[I][s] += tmp_fg
 
         
     @ti.kernel
@@ -100,15 +110,61 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
                 else:
                     self.Fg[i][self.LR[s]] = self.fg[i][s]
 
+    @ti.kernel
+    def BC_concentration(self):
+        if ti.static(self.solute_bc_x_left==1):
+            for j,k in ti.ndrange((0,self.ny),(0,self.nz)):
+                local_T = self.solute_bcxl
+                local_H = self.convert_T_H(local_T)
+                Cp = self.rho_fl[0,j,k]*self.Cp_l + (1-self.rho_fl[0,j,k])*self.Cp_s
+
+                for s in ti.static(range(19)):
+                    self.fg[0,j,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[0,j,k])
+
+        if ti.static(self.solute_bc_x_right==1):
+            for j,k in ti.ndrange((0,self.ny),(0,self.nz)):
+                local_T = self.solute_bcxr
+                local_H = self.convert_T_H(local_T)
+                Cp = self.rho_fl[self.nx-1,j,k]*self.Cp_l + (1-self.rho_fl[self.nx-1,j,k])*self.Cp_s
+
+                for s in ti.static(range(19)):
+                    self.fg[self.nx-1,j,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[self.nx-1,j,k])
+
+        if ti.static(self.solute_bc_y_left==1):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                local_T = self.solute_bcyl
+                local_H = self.convert_T_H(local_T)
+                Cp = self.rho_fl[i,0,k]*self.Cp_l + (1-self.rho_fl[i,0,k])*self.Cp_s
+
+                for s in ti.static(range(19)):
+                    self.fg[i,0,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,0,k])
+
+        if ti.static(self.solute_bc_y_right==1):
+            for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
+                local_T = self.solute_bcyr
+                local_H = self.convert_T_H(local_T)
+                Cp = self.rho_fl[i,self.ny-1,k]*self.Cp_l + (1-self.rho_fl[i,self.ny-1,k])*self.Cp_s
+
+                for s in ti.static(range(19)):
+                    self.fg[i,self.ny-1,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,self.ny-1,k])
+
+        
+
+
+
+        
+
     @ti.func
-    def convert_H_T(self,local_H, local_T):
+    def convert_H_T(self,local_H):
         new_T=0.0
         if (local_H<self.H_s):
             new_T = local_H/self.Cp_s
         elif (local_H>self.H_l):
             new_T = self.T_l+(local_H-self.H_l)/self.Cp_l
-        else:
+        elif (self.T_l>self.T_s):
             new_T = self.T_s+(local_H-self.H_s)/(self.H_l-self.H_s)*(self.T_l-self.T_s)
+        else:
+            new_T = self.T_s
 
         return new_T
 
@@ -158,12 +214,12 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
             self.rho_H[i] = 0.0
             for s in ti.static(range(19)):
                 self.rho_H[i] += self.Fg[i][s]
-                self.fg[i] = self.Fg[i]
+            self.fg[i] = self.Fg[i]
 
     @ti.kernel
     def update_T_fl(self):
         for I in ti.grouped(self.rho_T):
-            self.rho_T[I] = self.convert_H_T(self.rho_H[I], self.rho_T[I])
+            self.rho_T[I] = self.convert_H_T(self.rho_H[I])
             self.rho_fl[I] = self.convert_H_fl(self.rho_H[I])
 
 
@@ -173,11 +229,8 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.update_H_sl()
         self.init_H()
         self.init_fl()
+        self.init_fg()
         
-
-
-
-
     def init_concentration(self,filename):
         in_dat = np.loadtxt(filename)
         in_dat = np.reshape(in_dat, (self.nx,self.ny,self.nz),order='F')
@@ -230,10 +283,10 @@ lb3d_solute.set_force([1e-6,0.0,0.0])
 lb3d_solute.init_solute_simulation()
 
 
-for iter in range(300+1):
+for iter in range(10000+1):
     lb3d_solute.step()
 
-    if (iter%10==0):
+    if (iter%100==0):
         
         time_pre = time_now
         time_now = time.time()
@@ -249,7 +302,7 @@ for iter in range(300+1):
         print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
         print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, max_v,  10.0))
         
-        if (iter%10==0):
+        if (iter%200==0):
             lb3d_solute.export_VTK(iter)
 '''
 time_init = time.time()
