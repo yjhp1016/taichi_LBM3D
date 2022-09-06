@@ -213,7 +213,10 @@ class LB3D_Solver_Single_Phase:
         out[13] = u.x*u.y;    out[14] = u.y*u.z;                            out[15] = u.x*u.z
         return out
 
-
+    @ti.func
+    def cal_local_force(self,i,j,k):
+        f = ti.Vector([self.fx, self.fy, self.fz])
+        return f
 
     @ti.kernel
     def colission(self):
@@ -222,10 +225,11 @@ class LB3D_Solver_Single_Phase:
                 m_temp = self.M[None]@self.F[i,j,k]
                 meq = self.meq_vec(self.rho[i,j,k],self.v[i,j,k])
                 m_temp -= self.S_dig[None]*(m_temp-meq)
+                f = self.cal_local_force(i,j,k)
                 if (ti.static(self.force_flag==1)):
                     for s in ti.static(range(19)):
                     #    m_temp[s] -= S_dig[s]*(m_temp[s]-meq[s])
-                        f = ti.Vector([self.fx, self.fy, self.fz])
+                        #f = self.cal_local_force()
                         f_guo=0.0
                         for l in ti.static(range(19)):
                             f_guo += self.w[l]*((self.e_f[l]-self.v[i,j,k]).dot(f)+(self.e_f[l].dot(self.v[i,j,k])*(self.e_f[l].dot(f))))*self.M[None][s,l]
@@ -377,8 +381,10 @@ class LB3D_Solver_Single_Phase:
                 for s in ti.static(range(19)):
                     self.v[i] += self.e_f[s]*self.f[i][s]
                 
+                f = self.cal_local_force(i.x, i.y, i.z)
+
                 self.v[i] /= self.rho[i]
-                self.v[i] += (self.ext_f[None]/2)/self.rho[i]
+                self.v[i] += (f/2)/self.rho[i]
                 
             else:
                 self.rho[i] = 1.0

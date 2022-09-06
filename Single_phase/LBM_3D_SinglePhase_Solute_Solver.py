@@ -4,7 +4,7 @@ import numpy as np
 from pyevtk.hl import gridToVTK
 import time
 
-ti.init(arch=ti.cpu, dynamic_index=False, kernel_profiler=False, print_ir=False)
+ti.init(arch=ti.gpu, dynamic_index=False, kernel_profiler=False, print_ir=False)
 import LBM_3D_SinglePhase_Solver as lb3d
 
 @ti.data_oriented
@@ -12,23 +12,23 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     def __init__(self, nx, ny, nz):
         super(LB3D_Solver_Single_Phase_Solute, self).__init__(nx, ny, nz, sparse_storage = False)
 
-        self.solute_bc_x_left, self.solute_bcxl =0, 0.0
-        self.solute_bc_x_right, self.solute_bcxr =0, 0.0
-        self.solute_bc_y_left, self.solute_bcyl =0, 0.0
-        self.solute_bc_y_right, self.solute_bcyr =0, 0.0
-        self.solute_bc_z_left, self.solute_bczl =0, 0.0
-        self.solute_bc_z_right, self.solute_bczr =0, 0.0
+        self.solute_bc_x_left, self.solute_bcxl = 0, 0.0
+        self.solute_bc_x_right, self.solute_bcxr = 0, 0.0
+        self.solute_bc_y_left, self.solute_bcyl = 1, 30.0
+        self.solute_bc_y_right, self.solute_bcyr = 1, 10.0
+        self.solute_bc_z_left, self.solute_bczl = 0, 0.0
+        self.solute_bc_z_right, self.solute_bczr = 0, 0.0
 
-        self.solute_diffusive_bc_x_left, self.diffusive_bcxl = 0, 0.0
-        self.solute_diffusive_bc_x_right, self.diffusive_bcxr = 0, 0.0
-        self.solute_diffusive_bc_y_left, self.diffusive_bcyl = 0, 0.0
-        self.solute_diffusive_bc_y_right, self.diffusive_bcyr = 0, 0.0
-        self.solute_diffusive_bc_z_left, self.diffusive_bczl = 0, 0.0
-        self.solute_diffusive_bc_z_right, self.diffusive_bczr = 0, 0.0
+        #self.solute_diffusive_bc_x_left, self.diffusive_bcxl = 0, 0.0
+        #self.solute_diffusive_bc_x_right, self.diffusive_bcxr = 0, 0.0
+        #self.solute_diffusive_bc_y_left, self.diffusive_bcyl = 0, 0.0
+        #self.solute_diffusive_bc_y_right, self.diffusive_bcyr = 0, 0.0
+        #self.solute_diffusive_bc_z_left, self.diffusive_bczl = 0, 0.0
+        #self.solute_diffusive_bc_z_right, self.diffusive_bczr = 0, 0.0
 
-        self.buoyancy_parameter = 0.0   #Buoyancy Parameter (0= no buoyancy)
-        self.ref_T = 0.0              #reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
-        self.gravity = 5e-7
+        self.buoyancy_parameter = 30.0   #Buoyancy Parameter (0= no buoyancy)
+        self.ref_T = 15.0              #reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
+        self.gravity = 3e-6
         
         self.fg = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
         self.Fg = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
@@ -45,10 +45,10 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.Cp_l= 1.0
         self.Cp_s = 1.0
         self.Lt = 1.0
-        self.T_s = 10.0
-        self.T_l = 10.0
-        self.niu_s = 0.005
-        self.niu_l = 0.005
+        self.T_s = -10.0
+        self.T_l = -10.0
+        self.niu_s = 0.001
+        self.niu_l = 0.001
 
         self.H_s = None
         self.H_l = None
@@ -71,6 +71,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
             Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
             for s in ti.static(range(19)):
                 self.fg[I][s] = self.g_feq(s,self.rho_T[I],self.rho_H[I], Cp, self.v[I])
+                self.Fg[I][s] = self.fg[I][s]
 
     @ti.kernel
     def init_fl(self):
@@ -89,6 +90,14 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         #print(k, self.w[k], feqout, Cp, local_T)
         return feqout
 
+    
+    @ti.func
+    def cal_local_force(self, i, j, k):
+        f = ti.Vector([self.fx, self.fy, self.fz])
+        f[1] += self.gravity*self.buoyancy_parameter*(self.rho_T[i,j,k]-self.ref_T)
+        return f
+    
+
     @ti.kernel
     def colission_g(self):
         for I in ti.grouped(self.rho_T):
@@ -105,10 +114,11 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         for i in ti.grouped(self.rho_T):
             for s in ti.static(range(19)):
                 ip = self.periodic_index(i+self.e[s])
-                if (self.solid[ip]==0):
-                    self.Fg[ip][s] = self.fg[i][s]
-                else:
-                    self.Fg[i][self.LR[s]] = self.fg[i][s]
+                #if (self.solid[ip]==0):
+                #    self.Fg[ip][s] = self.fg[i][s]
+                #else:
+                #    self.Fg[i][self.LR[s]] = self.fg[i][s] # adiabatic BC!!!
+                self.Fg[ip][s] = self.fg[i][s]
 
     @ti.kernel
     def BC_concentration(self):
@@ -138,6 +148,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
                 for s in ti.static(range(19)):
                     self.fg[i,0,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,0,k])
+                    self.Fg[i,0,k][s] = self.fg[i,0,k][s]
 
         if ti.static(self.solute_bc_y_right==1):
             for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
@@ -147,14 +158,27 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
                 for s in ti.static(range(19)):
                     self.fg[i,self.ny-1,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,self.ny-1,k])
+                    self.Fg[i,self.ny-1,k][s] = self.fg[i,self.ny-1,k][s]
 
-        
+        if ti.static(self.solute_bc_z_left==1):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                local_T = self.solute_bczl
+                local_H = self.convert_T_H(local_T)
+                Cp = self.rho_fl[i,j,0]*self.Cp_l + (1-self.rho_fl[i,j,0])*self.Cp_s
+
+                for s in ti.static(range(19)):
+                    self.fg[i,j,0][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,j,0])
+
+        if ti.static(self.solute_bc_z_right==1):
+            for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
+                local_T = self.solute_bczr
+                local_H = self.convert_T_H(local_T)
+                Cp = self.rho_fl[i,j,self.nz-1]*self.Cp_l + (1-self.rho_fl[i,j,self.nz-1])*self.Cp_s
+
+                for s in ti.static(range(19)):
+                    self.fg[i,j,self.nz-1][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,j,self.nz-1])
 
 
-
-        
-
-    @ti.func
     def convert_H_T(self,local_H):
         new_T=0.0
         if (local_H<self.H_s):
@@ -243,6 +267,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.streaming1()
         self.streaming1_g()
         self.Boundary_condition()
+        self.BC_concentration()
 
         self.streaming3()
         self.streaming3_g()
@@ -279,14 +304,15 @@ lb3d_solute = LB3D_Solver_Single_Phase_Solute(50,50,5)
 lb3d_solute.init_geo('./geo_cavity.dat')
 lb3d_solute.init_concentration('./psi.dat')
 
-lb3d_solute.set_force([1e-6,0.0,0.0])
+#lb3d_solute.set_force([1e-6,0.0,0.0])
+lb3d_solute.set_viscosity(0.02)
 lb3d_solute.init_solute_simulation()
 
 
-for iter in range(10000+1):
+for iter in range(100000+1):
     lb3d_solute.step()
 
-    if (iter%100==0):
+    if (iter%1000==0):
         
         time_pre = time_now
         time_now = time.time()
@@ -302,8 +328,9 @@ for iter in range(10000+1):
         print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
         print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, max_v,  10.0))
         
-        if (iter%200==0):
+        if (iter%5000==0):
             lb3d_solute.export_VTK(iter)
+
 '''
 time_init = time.time()
 time_now = time.time()

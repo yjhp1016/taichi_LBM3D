@@ -29,10 +29,10 @@ np.savetxt(output_name,out_dat.T,fmt='%d')
 #           temprerature field
 #=========================================================
 
-out_dat = np.zeros((dnx,dny,dnz))+20
+out_dat = np.zeros((dnx,dny,dnz))+np.random.rand(dnx, dny,dnz)+20
 
 #=======Can define some geometry here to out_dat=========
-out_dat[10:20,:,:] = 35
+#out_dat[10:20,:,:] = 35
 #out_dat[:,-1,:] = 10
 
 
