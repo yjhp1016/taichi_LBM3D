@@ -26,9 +26,9 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         #self.solute_diffusive_bc_z_left, self.diffusive_bczl = 0, 0.0
         #self.solute_diffusive_bc_z_right, self.diffusive_bczr = 0, 0.0
 
-        self.buoyancy_parameter = 30.0   #Buoyancy Parameter (0= no buoyancy)
-        self.ref_T = 15.0              #reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
-        self.gravity = 3e-6
+        self.buoyancy_parameter = 20.0   #Buoyancy Parameter (0= no buoyancy)
+        self.ref_T = 20.0              #reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
+        self.gravity = 5e-7
         
         self.fg = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
         self.Fg = ti.Vector.field(19,ti.f32,shape=(nx,ny,nz))
@@ -47,8 +47,8 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.Lt = 1.0
         self.T_s = -10.0
         self.T_l = -10.0
-        self.niu_s = 0.001
-        self.niu_l = 0.001
+        self.niu_s = 0.002
+        self.niu_l = 0.002
 
         self.H_s = None
         self.H_l = None
@@ -130,6 +130,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
                 for s in ti.static(range(19)):
                     self.fg[0,j,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[0,j,k])
+                    self.Fg[0,j,k][s] = self.fg[0,j,k][s]
 
         if ti.static(self.solute_bc_x_right==1):
             for j,k in ti.ndrange((0,self.ny),(0,self.nz)):
@@ -139,6 +140,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
                 for s in ti.static(range(19)):
                     self.fg[self.nx-1,j,k][s] = self.g_feq(s,local_T, local_H, Cp, self.v[self.nx-1,j,k])
+                    self.Fg[self.nx-1,j,k][s]= self.fg[self.nx-1,j,k][s]
 
         if ti.static(self.solute_bc_y_left==1):
             for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
@@ -168,6 +170,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
                 for s in ti.static(range(19)):
                     self.fg[i,j,0][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,j,0])
+                    self.Fg[i,j,0][s] = self.fg[i,j,0][s]
 
         if ti.static(self.solute_bc_z_right==1):
             for i,j in ti.ndrange((0,self.nx),(0,self.ny)):
@@ -177,7 +180,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
                 for s in ti.static(range(19)):
                     self.fg[i,j,self.nz-1][s] = self.g_feq(s,local_T, local_H, Cp, self.v[i,j,self.nz-1])
-
+                    self.Fg[i,j,self.nz-1][s] = self.fg[i,j,self.nz-1][s]
 
     def convert_H_T(self,local_H):
         new_T=0.0
@@ -264,8 +267,10 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     def step(self):
         self.colission()
         self.colission_g()
+        
         self.streaming1()
         self.streaming1_g()
+
         self.Boundary_condition()
         self.BC_concentration()
 
@@ -304,12 +309,12 @@ lb3d_solute = LB3D_Solver_Single_Phase_Solute(50,50,5)
 lb3d_solute.init_geo('./geo_cavity.dat')
 lb3d_solute.init_concentration('./psi.dat')
 
-#lb3d_solute.set_force([1e-6,0.0,0.0])
-lb3d_solute.set_viscosity(0.02)
+lb3d_solute.set_force([0e-6,-1.0e-6,0.0])
+lb3d_solute.set_viscosity(0.05)
 lb3d_solute.init_solute_simulation()
 
 
-for iter in range(100000+1):
+for iter in range(300000+1):
     lb3d_solute.step()
 
     if (iter%1000==0):
@@ -331,39 +336,7 @@ for iter in range(100000+1):
         if (iter%5000==0):
             lb3d_solute.export_VTK(iter)
 
-'''
-time_init = time.time()
-time_now = time.time()
-time_pre = time.time()
-dt_count = 0               
 
-
-lb3d = LB3D_Solver_Single_Phase(50,50,50)
-
-lb3d.init_geo('./geo_cavity.dat')
-lb3d.set_bc_vel_x1([0.0,0.0,0.1])
-lb3d.init_simulation()
-
-
-for iter in range(50000+1):
-    lb3d.step()
-
-    if (iter%1000==0):
-        
-        time_pre = time_now
-        time_now = time.time()
-        diff_time = int(time_now-time_pre)
-        elap_time = int(time_now-time_init)
-        m_diff, s_diff = divmod(diff_time, 60)
-        h_diff, m_diff = divmod(m_diff, 60)
-        m_elap, s_elap = divmod(elap_time, 60)
-        h_elap, m_elap = divmod(m_elap, 60)
-        
-        print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
-        print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, 10.0,  10.0))
-        
-        if (iter%10000==0):
-            lb3d.export_VTK(iter)
             
 
 
@@ -373,5 +346,3 @@ for iter in range(50000+1):
 
 #ti.profiler.print_kernel_profiler_info('trace')
 #ti.profiler.clear_kernel_profiler_info()  # clear all records
-
-'''
