@@ -53,7 +53,52 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.H_s = None
         self.H_l = None
 
+    def set_specific_heat_solid(self, cps):
+        self.Cp_s = cps
 
+    def set_specific_heat_liquid(self, cpl):
+        self.Cp_l = cpl
+
+    def set_latent_heat(self, ltheat):
+        self.Lt = ltheat
+
+    def set_solidus_temperature(self, ts):
+        self.T_s = ts
+    
+    def set_liquidus_temperature(self, tl):
+        self.T_l = tl
+    
+    def set_solid_thermal_diffusivity(self, nius):
+        self.niu_s = nius
+
+    def set_liquid_thermal_diffusivity(self, niul):
+        self.niu_l = niul
+
+    def set_bc_constant_temperature_x_left(self,xl):
+        self.solute_bc_x_left = 1
+        self.solute_bcxl = xl
+    
+    def set_bc_constant_temperature_x_right(self,xr):
+        self.solute_bc_x_right = 1
+        self.solute_bcxr = xr
+    
+    def set_bc_constant_temperature_y_left(self,yl):
+        self.solute_bc_y_left = 1
+        self.solute_bcyl = yl
+
+    def set_bc_constant_temperature_y_right(self,yr):
+        self.solute_bc_y_right = 1
+        self.solute_bcyr = yr
+
+    def set_bc_constant_temperature_z_left(self,zl):
+        self.solute_bc_z_left = 1
+        self.solute_bczl = zl
+
+    def set_bc_constant_temperature_z_right(self,zr):
+        self.solute_bc_y_right = 1
+        self.solute_bczr = zr
+
+    
     def update_H_sl(self):
         self.H_s = self.Cp_s*self.T_s
         self.H_l = self.H_s+self.Lt
@@ -298,7 +343,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
             )   
 
 
-
+'''
 time_init = time.time()
 time_now = time.time()
 time_pre = time.time()
@@ -335,7 +380,7 @@ for iter in range(300000+1):
         
         if (iter%5000==0):
             lb3d_solute.export_VTK(iter)
-
+'''
 
             
 
