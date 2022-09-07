@@ -9,7 +9,7 @@ time_now = time.time()
 time_pre = time.time()             
 
 
-lb3d = lb3dsp.LB3D_Solver_Single_Phase(nx=50,ny=50,nz=50, sparse_storage=True)
+lb3d = lb3dsp.LB3D_Solver_Single_Phase(nx=50,ny=50,nz=50, sparse_storage=False)
 
 lb3d.init_geo('./geo_cavity.dat')
 lb3d.set_bc_vel_x1([0.0,0.0,0.1])

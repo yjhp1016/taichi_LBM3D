@@ -14,8 +14,8 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
         self.solute_bc_x_left, self.solute_bcxl = 0, 0.0
         self.solute_bc_x_right, self.solute_bcxr = 0, 0.0
-        self.solute_bc_y_left, self.solute_bcyl = 1, 30.0
-        self.solute_bc_y_right, self.solute_bcyr = 1, 10.0
+        self.solute_bc_y_left, self.solute_bcyl = 0, 0.0
+        self.solute_bc_y_right, self.solute_bcyr = 0, 0.0
         self.solute_bc_z_left, self.solute_bczl = 0, 0.0
         self.solute_bc_z_right, self.solute_bczr = 0, 0.0
 
@@ -52,6 +52,15 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
         self.H_s = None
         self.H_l = None
+
+    def set_gravity(self, gravity):
+        self.gravity = gravity
+
+    def set_buoyancy_parameter(self, buoyancy_param):
+        self.buoyancy_parameter = buoyancy_param
+    
+    def set_ref_T(self, ref_t):
+        self.ref_T = ref_t
 
     def set_specific_heat_solid(self, cps):
         self.Cp_s = cps
@@ -159,11 +168,11 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         for i in ti.grouped(self.rho_T):
             for s in ti.static(range(19)):
                 ip = self.periodic_index(i+self.e[s])
-                #if (self.solid[ip]==0):
-                #    self.Fg[ip][s] = self.fg[i][s]
-                #else:
-                #    self.Fg[i][self.LR[s]] = self.fg[i][s] # adiabatic BC!!!
-                self.Fg[ip][s] = self.fg[i][s]
+                if (self.solid[ip]==0):
+                    self.Fg[ip][s] = self.fg[i][s]
+                else:
+                    self.Fg[i][self.LR[s]] = self.fg[i][s] # adiabatic BC!!!
+                #self.Fg[ip][s] = self.fg[i][s]
 
     @ti.kernel
     def BC_concentration(self):
@@ -279,13 +288,37 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
         return new_fl
 
+    @ti.kernel
+    def streaming3(self):
+        for i in ti.grouped(self.rho):
+            #print(i.x, i.y, i.z)
+            if (self.solid[i]==0):
+                self.rho[i] = 0
+                self.v[i] = ti.Vector([0,0,0])
+                self.f[i] = self.F[i]
+                for s in ti.static(range(19)):
+                    self.f[i][s] = self.f[i][s]*self.rho_fl[i]+self.w[s]*(1.0-self.rho_fl[i])
+                self.rho[i] += self.f[i].sum()
+
+                for s in ti.static(range(19)):
+                    self.v[i] += self.e_f[s]*self.f[i][s]
+                
+                f = self.cal_local_force(i.x, i.y, i.z)
+
+                self.v[i] /= self.rho[i]
+                self.v[i] += (f/2)/self.rho[i]
+                
+            else:
+                self.rho[i] = 1.0
+                self.v[i] = ti.Vector([0,0,0])
 
     @ti.kernel
     def streaming3_g(self):
         for i in ti.grouped(self.rho_T):
             self.rho_H[i] = 0.0
-            for s in ti.static(range(19)):
-                self.rho_H[i] += self.Fg[i][s]
+            self.rho_H[i] = self.Fg[i].sum()
+            #for s in ti.static(range(19)):
+            #    self.rho_H[i] += self.Fg[i][s]
             self.fg[i] = self.Fg[i]
 
     @ti.kernel

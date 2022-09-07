@@ -12,16 +12,25 @@ time_pre = time.time()
 dt_count = 0            
 
 
-lb3d_solute = lb3d_solute_solver.LB3D_Solver_Single_Phase_Solute(50,50,5)
+lb3d_solute = lb3d_solute_solver.LB3D_Solver_Single_Phase_Solute(150,150,3)
 lb3d_solute.init_geo('./geo_cavity.dat')
 lb3d_solute.init_concentration('./psi.dat')
 
-lb3d_solute.set_force([0e-6,-1.0e-6,0.0])
+lb3d_solute.set_force([0e-6,-5.0e-7,0.0])
 lb3d_solute.set_viscosity(0.05)
-lb3d_solute.set_bc_vel_y0([0.0,0.0,0.0])
-lb3d_solute.set_bc_vel_y1([0.0,0.0,0.0])
-lb3d_solute.set_bc_constant_temperature_y_left(30.0)
-lb3d_solute.set_bc_constant_temperature_y_right(10.0)
+lb3d_solute.set_bc_vel_x0([0.0,0.0,0.0])
+lb3d_solute.set_bc_vel_x1([0.0,0.0,0.0])
+lb3d_solute.set_bc_constant_temperature_x_left(30.0)
+lb3d_solute.set_bc_constant_temperature_x_right(0.0)
+lb3d_solute.set_solidus_temperature(5.0)
+lb3d_solute.set_liquidus_temperature(5.0)
+lb3d_solute.set_liquid_thermal_diffusivity(0.005)
+lb3d_solute.set_solid_thermal_diffusivity(0.001)
+lb3d_solute.set_latent_heat(10.0)
+lb3d_solute.set_ref_T(15.0)
+lb3d_solute.set_buoyancy_parameter(5.0)
+lb3d_solute.set_gravity(2e-7)
+
 lb3d_solute.init_solute_simulation()
 
 

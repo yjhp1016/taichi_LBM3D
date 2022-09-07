@@ -6,7 +6,7 @@ import math
 output_name = 'geo_cavity.dat'
 output_name2 = 'psi.dat'
 
-dnx, dny, dnz = 50, 50, 5
+dnx, dny, dnz = 150, 150, 3
 
 #==========================================================
 #           Geometry
@@ -29,11 +29,11 @@ np.savetxt(output_name,out_dat.T,fmt='%d')
 #           temprerature field
 #=========================================================
 
-out_dat = np.zeros((dnx,dny,dnz))+np.random.rand(dnx, dny,dnz)+20
+out_dat = np.zeros((dnx,dny,dnz))#+np.random.rand(dnx, dny,dnz)+20
 
 #=======Can define some geometry here to out_dat=========
-#out_dat[10:20,:,:] = 35
-#out_dat[:,-1,:] = 10
+out_dat[0:int(dnx/2),:,:] = 15
+out_dat[int(dnx/2):-1,:,:] = 0
 
 
 #=========================================================
