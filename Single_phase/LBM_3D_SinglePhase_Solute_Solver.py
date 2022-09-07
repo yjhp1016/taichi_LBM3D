@@ -265,7 +265,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     @ti.func
     def convert_T_H(self,local_T):
         new_H = 0.0
-        if (local_T<self.T_s):
+        if (local_T<=self.T_s):
             new_H = self.Cp_s*local_T
         elif (local_T>self.T_l):
             new_H = (local_T-self.T_l)*self.Cp_l+self.H_l
