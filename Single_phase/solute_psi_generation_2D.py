@@ -32,8 +32,8 @@ np.savetxt(output_name,out_dat.T,fmt='%d')
 out_dat = np.zeros((dnx,dny,dnz))#+np.random.rand(dnx, dny,dnz)+20
 
 #=======Can define some geometry here to out_dat=========
-out_dat[0:int(dnx/2),:,:] = 15
-out_dat[int(dnx/2):-1,:,:] = 0
+out_dat[0:int(dnx/2),:,:] = 20
+out_dat[int(dnx/2):-1,:,:] = 10
 
 
 #=========================================================
