@@ -257,7 +257,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
             for j,k in ti.ndrange((0,self.ny),(0,self.nz)):
                 for s in ti.static(range(19)):
                     self.fg[0,j,k][s] = self.fg[1,j,k][s]
-                    self.Fg[0,j,k][s] = self.fg[0,j,k][s]
+                    self.Fg[0,j,k][s] = self.fg[1,j,k][s]
 
 
         if ti.static(self.solute_bc_x_right==1):
@@ -289,7 +289,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
             for i,k in ti.ndrange((0,self.nx),(0,self.nz)):
                 for s in ti.static(range(19)):
                     self.fg[i,0,k][s] = self.fg[i,1,k][s]
-                    self.Fg[i,1,k][s] = self.fg[i,1,k][s]
+                    self.Fg[i,0,k][s] = self.fg[i,1,k][s]
 
 
         if ti.static(self.solute_bc_y_right==1):
