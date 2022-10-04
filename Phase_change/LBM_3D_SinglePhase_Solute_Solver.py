@@ -54,6 +54,10 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.H_s = None
         self.H_l = None
 
+        self.niu_solid = 0.001
+        self.Cp_solid = 10.0
+        
+
     def set_gravity(self, gravity):
         self.gravity = gravity
 
@@ -183,12 +187,20 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     @ti.kernel
     def colission_g(self):
         for I in ti.grouped(self.rho_T):
-            tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
-            Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
+            tau_s = 3.0*self.niu_solid+0.5
+            Cp = self.Cp_solid
+
+            if (self.solid[I] == 0):
+                tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
+                Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
+    
+
             for s in ti.static(range(19)):
                 tmp_fg = -1.0/tau_s*(self.fg[I][s]-self.g_feq(s,self.rho_T[I],self.rho_H[I], Cp, self.v[I]))
                 #print(self.fg[I][s],tmp_fg,I,s,self.rho_H[I],self.g_feq(s,self.rho_T[I],self.rho_H[I], Cp, self.v[I]))
                 self.fg[I][s] += tmp_fg
+            
+
 
     
     @ti.kernel
@@ -235,10 +247,10 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         for i in ti.grouped(self.rho_T):
             for s in ti.static(range(19)):
                 ip = self.periodic_index(i+self.e[s])
-                #if (self.solid[ip]==0):
-                self.Fg[ip][s] = self.fg[i][s]
-                #else:
-                    #self.Fg[i][self.LR[s]] = self.fg[i][s] # adiabatic BC!!!
+                if (self.solid[ip]==0):
+                    self.Fg[ip][s] = self.fg[i][s]
+                else:
+                    self.Fg[i][self.LR[s]] = self.fg[i][s] # adiabatic BC!!!
                     #self.Fg[i][s] = self.fg[i][s] # adiabatic BC!!!
                 #self.Fg[ip][s] = self.fg[i][s]
 
