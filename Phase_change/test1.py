@@ -16,29 +16,30 @@ lb3d_solute = lb3d_solute_solver.LB3D_Solver_Single_Phase_Solute(167,218,3)
 lb3d_solute.init_geo('./geo_cavity.dat')
 lb3d_solute.init_concentration('./psi.dat')
 
-lb3d_solute.set_force([1e-5,-0.0e-6,0.0])
+lb3d_solute.set_force([6e-6,-0.0e-6,0.0])
 lb3d_solute.set_viscosity(0.1)
 #lb3d_solute.set_bc_vel_x0([0.0e-3,0.0,0.0])
 #lb3d_solute.set_bc_vel_x1([0.0,0.0,0.0])
-lb3d_solute.set_bc_constant_temperature_x_left(30.0)
+lb3d_solute.set_bc_constant_temperature_x_left(40.0)
 #lb3d_solute.set_bc_constant_temperature_x_right(5.0)
+lb3d_solute.set_bc_adiabatic_x_right(True)
 #lb3d_solute.set_bc_adiabatic_y_left(True)
 #lb3d_solute.set_bc_adiabatic_y_right(True)
-lb3d_solute.set_solidus_temperature(15.0)
-lb3d_solute.set_liquidus_temperature(15.0)
-lb3d_solute.set_liquid_thermal_diffusivity(0.01)
-lb3d_solute.set_solid_thermal_diffusivity(0.02)
-lb3d_solute.set_latent_heat(10.1)
+lb3d_solute.set_solidus_temperature(20.0)
+lb3d_solute.set_liquidus_temperature(20.0)
+lb3d_solute.set_liquid_thermal_diffusivity(0.002)
+lb3d_solute.set_solid_thermal_diffusivity(0.001)
+lb3d_solute.set_latent_heat(100.1)
 lb3d_solute.set_ref_T(-5.0)
 lb3d_solute.set_buoyancy_parameter(0.6)
 lb3d_solute.set_specific_heat_liquid(2.0)
-lb3d_solute.set_specific_heat_solid(1.0)
+lb3d_solute.set_specific_heat_solid(1.5)
 lb3d_solute.set_gravity(0.0e-7)
 
 lb3d_solute.init_solute_simulation()
 
 
-for iter in range(20000+1):
+for iter in range(100000+1):
     lb3d_solute.step()
 
     if (iter%1000==0):

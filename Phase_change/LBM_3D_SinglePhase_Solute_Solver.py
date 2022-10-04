@@ -55,7 +55,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.H_l = None
 
         self.niu_solid = 0.001
-        self.Cp_solid = 10.0
+        self.Cp_solid = 1.0
         
 
     def set_gravity(self, gravity):
@@ -187,12 +187,15 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     @ti.kernel
     def colission_g(self):
         for I in ti.grouped(self.rho_T):
-            tau_s = 3.0*self.niu_solid+0.5
-            Cp = self.Cp_solid
+            #tau_s = 3.0*self.niu_solid+0.5
+            #Cp = self.Cp_solid
+            
+            tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
+            Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
 
-            if (self.solid[I] == 0):
-                tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
-                Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
+            #if (self.solid[I] == 0):
+            #    tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
+            #    Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
     
 
             for s in ti.static(range(19)):
@@ -206,40 +209,39 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     @ti.kernel
     def colission(self):
         for i,j,k in self.rho:
-            if (self.solid[i,j,k] == 0):
-                m_temp = self.M[None]@self.F[i,j,k]
-                meq = self.meq_vec(self.rho[i,j,k],self.v[i,j,k])
-                m_temp -= self.S_dig[None]*(m_temp-meq)
-                f = self.cal_local_force(i,j,k)
-                if (ti.static(self.force_flag==1)):
-                    for s in ti.static(range(19)):
-                    #    m_temp[s] -= S_dig[s]*(m_temp[s]-meq[s])
-                        #f = self.cal_local_force()
-                        f_guo=0.0
-                        for l in ti.static(range(19)):
-                            f_guo += self.w[l]*((self.e_f[l]-self.v[i,j,k]).dot(f)+(self.e_f[l].dot(self.v[i,j,k])*(self.e_f[l].dot(f))))*self.M[None][s,l]
-                        #m_temp[s] += (1-0.5*self.S_dig[None][s])*self.GuoF(i,j,k,s,self.v[i,j,k],force)
-                        m_temp[s] += (1-0.5*self.S_dig[None][s])*f_guo
-                
-                self.f[i,j,k] = ti.Vector([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
-                self.f[i,j,k] += self.inv_M[None]@m_temp
-
+            #if (self.solid[i,j,k] == 0):
+            m_temp = self.M[None]@self.F[i,j,k]
+            meq = self.meq_vec(self.rho[i,j,k],self.v[i,j,k])
+            m_temp -= self.S_dig[None]*(m_temp-meq)
+            f = self.cal_local_force(i,j,k)
+            if (ti.static(self.force_flag==1)):
                 for s in ti.static(range(19)):
-                    self.f[i,j,k][s] = self.f[i,j,k][s]*(self.rho_fl[i,j,k]) + self.w[s]*(1.0-self.rho_fl[i,j,k])
+                #    m_temp[s] -= S_dig[s]*(m_temp[s]-meq[s])
+                    #f = self.cal_local_force()
+                    f_guo=0.0
+                    for l in ti.static(range(19)):
+                        f_guo += self.w[l]*((self.e_f[l]-self.v[i,j,k]).dot(f)+(self.e_f[l].dot(self.v[i,j,k])*(self.e_f[l].dot(f))))*self.M[None][s,l]
+                    #m_temp[s] += (1-0.5*self.S_dig[None][s])*self.GuoF(i,j,k,s,self.v[i,j,k],force)
+                    m_temp[s] += (1-0.5*self.S_dig[None][s])*f_guo
+            
+            self.f[i,j,k] = ti.Vector([0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
+            self.f[i,j,k] += self.inv_M[None]@m_temp
+
+            for s in ti.static(range(19)):
+                self.f[i,j,k][s] = self.f[i,j,k][s]*(self.rho_fl[i,j,k]) + self.w[s]*(1.0-self.rho_fl[i,j,k])
     
     @ti.kernel
     def streaming1(self):
         for i in ti.grouped(self.rho):
-            if (self.solid[i] == 0):
-                for s in ti.static(range(19)):
-                    ip = self.periodic_index(i+self.e[s])
-                    if (self.solid[ip]==0):
-                        self.F[ip][s] = self.f[i][s]
-                        #self.F[ip][s] = self.f[i][s]*self.rho_fl[i]
-                        #self.F[i][self.LR[s]] = self.f[i][s]*(1.0-self.rho_fl[i])
-                    else:
-                        self.F[i][self.LR[s]] = self.f[i][s]
-                        #print(i, ip, "@@@")
+            #if (self.solid[i] == 0):
+            for s in ti.static(range(19)):
+                ip = self.periodic_index(i+self.e[s])
+                self.F[ip][s] = self.f[i][s]
+                #if (self.solid[ip]==0):
+                #    self.F[ip][s] = self.f[i][s]
+                #else:
+                #    self.F[i][self.LR[s]] = self.f[i][s]
+                    
 
     
     @ti.kernel
@@ -247,10 +249,13 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         for i in ti.grouped(self.rho_T):
             for s in ti.static(range(19)):
                 ip = self.periodic_index(i+self.e[s])
-                if (self.solid[ip]==0):
-                    self.Fg[ip][s] = self.fg[i][s]
-                else:
-                    self.Fg[i][self.LR[s]] = self.fg[i][s] # adiabatic BC!!!
+                self.Fg[ip][s] = self.fg[i][s]
+                #if (self.solid[ip]==0):
+                #    self.Fg[ip][s] = self.fg[i][s]
+                #else:
+                #    self.Fg[i][self.LR[s]] = self.fg[i][s] # adiabatic BC!!!
+                
+                
                     #self.Fg[i][s] = self.fg[i][s] # adiabatic BC!!!
                 #self.Fg[ip][s] = self.fg[i][s]
 
@@ -443,6 +448,8 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         for I in ti.grouped(self.rho_T):
             self.rho_T[I] = self.convert_H_T(self.rho_H[I])
             self.rho_fl[I] = self.convert_H_fl(self.rho_H[I])
+            if (self.solid[I]>0):
+                self.rho_fl[I] = 0.0
 
 
     def init_solute_simulation(self):

@@ -2,7 +2,7 @@ import numpy as np
 
 import copy
 
-img_in = np.loadtxt('C:\\Users\\J0424810\\Downloads\\Work\\YF\\melt\\test1\\pic1.txt')
+img_in = np.loadtxt('./pic1.txt')
 
 # INPUT STL FILE NAME
 output_name = 'geo_cavity.dat'
@@ -45,7 +45,7 @@ np.savetxt(output_name,out_dat.T,fmt='%d')
 #=======Can define some geometry here to out_dat=========
 I1 = out_dat2>30
 out_dat2[I1] = 10.0
-out_dat2[~I1] = 20.0
+out_dat2[~I1] = 25.0
 
 
 #=========================================================
