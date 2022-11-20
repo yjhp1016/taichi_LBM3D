@@ -1,9 +1,3 @@
-//g++ -std=c++11 -pthread -I/usr/local/include/eigen3 -I/home/jianhui/Software/libigl/include mesh_refinement_pointDisplace.cpp -O3 -o test
-//g++ -std=c++11 -pthread -I/reservoir/Jianhui/Software/eigen/include/eigen3 -I/reservoir/Jianhui/Software/libigl-main/include mesh_refinement_pointDisplace.cpp -O3 -o test
-//export CPLUS_INCLUDE_PATH=/home/jianhui/Software/libigl/include:$CPLUS_INCLUDE_PATH
-// ./test Input_MeshRefinement.dat
-
-
 #include <iostream>
 #include <math.h>
 
