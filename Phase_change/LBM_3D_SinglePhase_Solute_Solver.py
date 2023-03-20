@@ -73,6 +73,9 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
     def set_specific_heat_liquid(self, cpl):
         self.Cp_l = cpl
 
+    def set_specific_heat_rock(self, cprock):
+        self.Cp_solid = cprock
+
     def set_latent_heat(self, ltheat):
         self.Lt = ltheat
 
@@ -87,6 +90,9 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
 
     def set_liquid_thermal_diffusivity(self, niul):
         self.niu_l = niul
+
+    def set_rock_thermal_diffusivity(self, niurock):
+        self.niu_solid = niurock
 
     def set_bc_adiabatic_x_left(self, bc_ad):
         if (bc_ad==True):
@@ -193,9 +199,10 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
             tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
             Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
 
-            #if (self.solid[I] == 0):
-            #    tau_s = 3*(self.niu_s*(1.0-self.rho_fl[I])+self.niu_l*self.rho_fl[I])+0.5
-            #    Cp = self.rho_fl[I]*self.Cp_l + (1-self.rho_fl[I])*self.Cp_s
+            #ROCK 
+            if (self.solid[I] >0):
+                tau_s = 3.0*self.niu_solid+0.5
+                Cp = self.Cp_solid
     
 
             for s in ti.static(range(19)):

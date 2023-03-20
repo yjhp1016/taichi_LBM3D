@@ -3,7 +3,7 @@ import numpy as np
 from pyevtk.hl import gridToVTK
 import time
 
-ti.init(arch=ti.gpu, dynamic_index=False, kernel_profiler=False, print_ir=False)
+ti.init(arch=ti.cpu, dynamic_index=False, kernel_profiler=False, print_ir=False)
 import LBM_3D_SinglePhase_Solute_Solver as lb3d_solute_solver
 
 time_init = time.time()
@@ -12,7 +12,7 @@ time_pre = time.time()
 dt_count = 0            
 
 
-lb3d_solute = lb3d_solute_solver.LB3D_Solver_Single_Phase_Solute(150,150,3)
+lb3d_solute = lb3d_solute_solver.LB3D_Solver_Single_Phase_Solute(167,218,3)
 lb3d_solute.init_geo('./geo_cavity.dat')
 lb3d_solute.init_concentration('./psi.dat')
 
@@ -28,11 +28,13 @@ lb3d_solute.set_solidus_temperature(10.0)
 lb3d_solute.set_liquidus_temperature(10.0)
 lb3d_solute.set_liquid_thermal_diffusivity(0.01)
 lb3d_solute.set_solid_thermal_diffusivity(0.02)
+lb3d_solute.set_rock_thermal_diffusivity(0.001)
 lb3d_solute.set_latent_heat(10.1)
 lb3d_solute.set_ref_T(-5.0)
 lb3d_solute.set_buoyancy_parameter(0.6)
 lb3d_solute.set_specific_heat_liquid(2.0)
 lb3d_solute.set_specific_heat_solid(1.0)
+lb3d_solute.set_specific_heat_rock(0.5)
 lb3d_solute.set_gravity(3e-7)
 
 lb3d_solute.init_solute_simulation()

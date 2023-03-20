@@ -1,4 +1,4 @@
-from sympy import inverse_mellin_transform
+#from sympy import inverse_mellin_transform
 import taichi as ti
 import numpy as np
 from pyevtk.hl import gridToVTK
