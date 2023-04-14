@@ -17,7 +17,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="2phase package" href="2phase.html" />
+    <link rel="next" title="Single_phase" href="Single_phase.html" />
     <link rel="prev" title="Welcome to taichi-LBM3D’s documentation!" href="index.html" /> 
 </head>
 
@@ -43,10 +43,10 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">taichi_LBM3D</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="2phase.html">2phase package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Grey_Scale.html">Grey_Scale package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Phase_change.html">Phase_change package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Single_phase.html">Single_phase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Grey_Scale.html">Grey_Scale package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2phase.html">2phase package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Phase_change.html">Phase_change package</a></li>
 </ul>
 </li>
 </ul>
@@ -79,11 +79,9 @@
 <h1>taichi_LBM3D<a class="headerlink" href="#taichi-lbm3d" title="Permalink to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="2phase.html">2phase package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="2phase.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="2phase.html#phase-lbm-solver-3d-2phase-module">2phase.lbm_solver_3d_2phase module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="2phase.html#phase-lbm-solver-3d-2phase-sparse-module">2phase.lbm_solver_3d_2phase_sparse module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="2phase.html#module-contents">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Single_phase.html">Single_phase</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="LBM_3D_SinglePhase_Solver.html">Single_phase.LBM_3D_SinglePhase_Solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lbm_solver_3d.html">Single_phase.lbm_solver_3d</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Grey_Scale.html">Grey_Scale package</a><ul>
@@ -91,6 +89,13 @@
 <li class="toctree-l2"><a class="reference internal" href="Grey_Scale.html#grey-scale-flow-domain-geo-generation-module">Grey_Scale.flow_domain_geo_generation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Grey_Scale.html#grey-scale-lbm-solver-3d-macro-sukop-module">Grey_Scale.lbm_solver_3d_Macro_Sukop module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Grey_Scale.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="2phase.html">2phase package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2phase.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2phase.html#phase-lbm-solver-3d-2phase-module">2phase.lbm_solver_3d_2phase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2phase.html#phase-lbm-solver-3d-2phase-sparse-module">2phase.lbm_solver_3d_2phase_sparse module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2phase.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Phase_change.html">Phase_change package</a><ul>
@@ -105,16 +110,6 @@
 <li class="toctree-l2"><a class="reference internal" href="Phase_change.html#module-contents">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Single_phase.html">Single_phase</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Single_phase.html#single-phase-lbm-3d-singlephase-solver">Single_phase.LBM_3D_SinglePhase_Solver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Single_phase.html#single-phase-example-cavity">Single_phase.example_cavity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Single_phase.html#single-phase-example-porous-medium">Single_phase.example_porous_medium</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Single_phase.html#single-phase-flow-domain-geo-generation-2d">Single_phase.flow_domain_geo_generation_2D</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Single_phase.html#single-phase-lbm-solver-3d">Single_phase.lbm_solver_3d</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Single_phase.html#single-phase-lbm-solver-3d-cavity">Single_phase.lbm_solver_3d_cavity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Single_phase.html#single-phase-lbm-solver-3d-sparse">Single_phase.lbm_solver_3d_sparse</a></li>
-</ul>
-</li>
 </ul>
 </div>
 </section>
@@ -124,7 +119,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Welcome to taichi-LBM3D’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="2phase.html" class="btn btn-neutral float-right" title="2phase package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="Single_phase.html" class="btn btn-neutral float-right" title="Single_phase" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
