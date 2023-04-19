@@ -1,20 +1,10 @@
-Grey\_Scale package
+Grey\_Scale
 ===================
 
-Submodules
-----------
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
 
-Grey\_Scale.flow\_domain\_geo\_generation module
-------------------------------------------------
-
-
-
-Grey\_Scale.lbm\_solver\_3d\_Macro\_Sukop module
-------------------------------------------------
-
-
-
-Module contents
----------------
-
+   Grey_scale/flow_domain_geo_generation
+   Grey_scale/lbm_solver_3d_Macro_Sukop
 

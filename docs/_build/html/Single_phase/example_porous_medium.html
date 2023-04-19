@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>example_porous_medium &mdash; taichi-LBM3D 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Convert_stl_to_binary" href="Convert_stl_to_binary.html" />
+    <link rel="prev" title="example_cavity" href="example_cavity.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            taichi-LBM3D
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../modules.html">taichi_LBM3D</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../Single_phase.html">Single_phase</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="LBM_3D_SinglePhase_Solver.html">Single_phase.LBM_3D_SinglePhase_Solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lbm_solver_3d.html">Single_phase.lbm_solver_3d</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lbm_solver_3d_cavity.html">lbm_solver_3d_cavity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lbm_solver_3d_sparse.html">lbm_solver_3d_sparse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow_domain_geo_generation_2D.html">flow_domain_geo_generation_2D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="example_cavity.html">example_cavity</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">example_porous_medium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Convert_stl_to_binary.html">Convert_stl_to_binary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Grey_Scale.html">Grey_Scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2phase.html">2phase package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Phase_change.html">Phase_change package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">taichi-LBM3D</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../modules.html">taichi_LBM3D</a></li>
+          <li class="breadcrumb-item"><a href="../Single_phase.html">Single_phase</a></li>
+      <li class="breadcrumb-item active">example_porous_medium</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Single_phase/example_porous_medium.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="example-porous-medium">
+<h1>example_porous_medium<a class="headerlink" href="#example-porous-medium" title="Permalink to this heading"></a></h1>
+<p>This file simulate the porous medium based on the LBM_3D_SinglePhase_Solver</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#import time and taichi package</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">taichi</span> <span class="k">as</span> <span class="nn">ti</span>
+<span class="c1">#taichi intialization</span>
+<span class="n">ti</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">arch</span><span class="o">=</span><span class="n">ti</span><span class="o">.</span><span class="n">cpu</span><span class="p">)</span>
+<span class="c1">#import the LBM_3D_SinglePhase_Solver</span>
+<span class="kn">import</span> <span class="nn">LBM_3D_SinglePhase_Solver</span> <span class="k">as</span> <span class="nn">lb3dsp</span>
+<span class="c1">#set the time</span>
+<span class="n">time_init</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">time_now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">time_pre</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="c1">#create the 131*131*131 gird LBM_3D_SinglePhase_Solver</span>
+<span class="n">lb3d</span> <span class="o">=</span> <span class="n">lb3dsp</span><span class="o">.</span><span class="n">LB3D_Solver_Single_Phase</span><span class="p">(</span><span class="n">nx</span><span class="o">=</span><span class="mi">131</span><span class="p">,</span><span class="n">ny</span><span class="o">=</span><span class="mi">131</span><span class="p">,</span><span class="n">nz</span><span class="o">=</span><span class="mi">131</span><span class="p">)</span>
+<span class="c1">#import the porous medium geometry</span>
+<span class="n">lb3d</span><span class="o">.</span><span class="n">init_geo</span><span class="p">(</span><span class="s1">&#39;./img_ftb131.txt&#39;</span><span class="p">)</span>
+<span class="c1">#set x-left and x-right density</span>
+<span class="n">lb3d</span><span class="o">.</span><span class="n">set_bc_rho_x1</span><span class="p">(</span><span class="mf">0.99</span><span class="p">)</span>
+<span class="n">lb3d</span><span class="o">.</span><span class="n">set_bc_rho_x0</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="c1">#initialize the simulation</span>
+<span class="n">lb3d</span><span class="o">.</span><span class="n">init_simulation</span><span class="p">()</span>
+<span class="c1">#simulation loop</span>
+<span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50000</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">lb3d</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">iter</span><span class="o">%</span><span class="mi">500</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c1">#calculate the time</span>
+        <span class="n">time_pre</span> <span class="o">=</span> <span class="n">time_now</span>
+        <span class="n">time_now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">diff_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time_now</span><span class="o">-</span><span class="n">time_pre</span><span class="p">)</span>
+        <span class="n">elap_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time_now</span><span class="o">-</span><span class="n">time_init</span><span class="p">)</span>
+        <span class="n">m_diff</span><span class="p">,</span> <span class="n">s_diff</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">diff_time</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">h_diff</span><span class="p">,</span> <span class="n">m_diff</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">m_diff</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">m_elap</span><span class="p">,</span> <span class="n">s_elap</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">elap_time</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">h_elap</span><span class="p">,</span> <span class="n">m_elap</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">m_elap</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="c1">#print the time</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----------Time between two outputs is </span><span class="si">%d</span><span class="s1">h </span><span class="si">%d</span><span class="s1">m </span><span class="si">%d</span><span class="s1">s; elapsed time is </span><span class="si">%d</span><span class="s1">h </span><span class="si">%d</span><span class="s1">m </span><span class="si">%d</span><span class="s1">s----------------------&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">h_diff</span><span class="p">,</span> <span class="n">m_diff</span><span class="p">,</span> <span class="n">s_diff</span><span class="p">,</span><span class="n">h_elap</span><span class="p">,</span><span class="n">m_elap</span><span class="p">,</span><span class="n">s_elap</span><span class="p">))</span>
+        <span class="c1">#print the time step, max force=10, force_scale=10</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The </span><span class="si">%d</span><span class="s1">th iteration, Max Force = </span><span class="si">%f</span><span class="s1">,  force_scale = </span><span class="si">%f</span><span class="se">\n\n</span><span class="s1"> &#39;</span> <span class="o">%</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span>  <span class="mf">10.0</span><span class="p">))</span>
+        <span class="c1">#export VTK every 2000 time step</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">iter</span><span class="o">%</span><span class="mi">2000</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">lb3d</span><span class="o">.</span><span class="n">export_VTK</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example_cavity.html" class="btn btn-neutral float-left" title="example_cavity" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Convert_stl_to_binary.html" class="btn btn-neutral float-right" title="Convert_stl_to_binary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, xiongxin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

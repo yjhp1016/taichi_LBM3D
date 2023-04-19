@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lbm_solver_3d_cavity &mdash; taichi-LBM3D 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lbm_solver_3d_sparse" href="lbm_solver_3d_sparse.html" />
+    <link rel="prev" title="Single_phase.lbm_solver_3d" href="lbm_solver_3d.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            taichi-LBM3D
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">taichi_LBM3D</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="Single_phase.html">Single_phase</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="LBM_3D_SinglePhase_Solver.html">Single_phase.LBM_3D_SinglePhase_Solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lbm_solver_3d.html">Single_phase.lbm_solver_3d</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lbm_solver_3d_cavity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lbm_solver_3d_sparse.html">lbm_solver_3d_sparse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow_domain_geo_generation_2D.html">flow_domain_geo_generation_2D</a></li>
+<li class="toctree-l3"><a class="reference internal" href="example_cavity.html">example_cavity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="example_porous_medium.html">example_porous_medium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Convert_stl_to_binary.html">Convert_stl_to_binary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Grey_Scale.html">Grey_Scale package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2phase.html">2phase package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Phase_change.html">Phase_change package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">taichi-LBM3D</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">taichi_LBM3D</a></li>
+          <li class="breadcrumb-item"><a href="Single_phase.html">Single_phase</a></li>
+      <li class="breadcrumb-item active">lbm_solver_3d_cavity</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/lbm_solver_3d_cavity.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="lbm-solver-3d-cavity">
+<h1>lbm_solver_3d_cavity<a class="headerlink" href="#lbm-solver-3d-cavity" title="Permalink to this heading"></a></h1>
+<p>This solver is almost similar to lbm_solver_3d expect several difference as follows:
+.. number:: lbm_solver_3d_cavity</p>
+<ol class="arabic simple">
+<li><p>The Grid resolution in this solver is 50x50x50</p></li>
+<li><p>The viscosity in this solver is 0.16667</p></li>
+<li><p>The boundary condition in this solver is velocity solver on x-right as follows</p></li>
+</ol>
+<p>boundary condition of this solver</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Boundary condition mode: 0=periodic, 1= fix pressure, 2=fix velocity; boundary pressure value (rho); boundary velocity value for vx,vy,vz</span>
+<span class="n">bc_x_left</span><span class="p">,</span> <span class="n">rho_bcxl</span><span class="p">,</span> <span class="n">vx_bcxl</span><span class="p">,</span> <span class="n">vy_bcxl</span><span class="p">,</span> <span class="n">vz_bcxl</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0e-5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>  <span class="c1">#Boundary x-axis left side</span>
+<span class="n">bc_x_right</span><span class="p">,</span> <span class="n">rho_bcxr</span><span class="p">,</span> <span class="n">vx_bcxr</span><span class="p">,</span> <span class="n">vy_bcxr</span><span class="p">,</span> <span class="n">vz_bcxr</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span>  <span class="c1">#Boundary x-axis right side</span>
+<span class="n">bc_y_left</span><span class="p">,</span> <span class="n">rho_bcyl</span><span class="p">,</span> <span class="n">vx_bcyl</span><span class="p">,</span> <span class="n">vy_bcyl</span><span class="p">,</span> <span class="n">vz_bcyl</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>  <span class="c1">#Boundary y-axis left side</span>
+<span class="n">bc_y_right</span><span class="p">,</span> <span class="n">rho_bcyr</span><span class="p">,</span> <span class="n">vx_bcyr</span><span class="p">,</span> <span class="n">vy_bcyr</span><span class="p">,</span> <span class="n">vz_bcyr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>  <span class="c1">#Boundary y-axis right side</span>
+<span class="n">bc_z_left</span><span class="p">,</span> <span class="n">rho_bczl</span><span class="p">,</span> <span class="n">vx_bczl</span><span class="p">,</span> <span class="n">vy_bczl</span><span class="p">,</span> <span class="n">vz_bczl</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>  <span class="c1">#Boundary z-axis left side</span>
+<span class="n">bc_z_right</span><span class="p">,</span> <span class="n">rho_bczr</span><span class="p">,</span> <span class="n">vx_bczr</span><span class="p">,</span> <span class="n">vy_bczr</span><span class="p">,</span> <span class="n">vz_bczr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>  <span class="c1">#Boundary z-axis right side</span>
+</pre></div>
+</div>
+<p>x-right is implementated with velocity boundary condition</p>
+<p>4. The boundary condition implementation is different from lbm_solver_3d, in this solver, the density distribution
+function is calculated based on velocity on the boundary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ti</span><span class="o">.</span><span class="n">static</span><span class="p">(</span><span class="n">bc_x_left</span><span class="o">==</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="n">ti</span><span class="o">.</span><span class="n">ndrange</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">ny</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="n">nz</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">solid</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ti</span><span class="o">.</span><span class="n">static</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">)):</span>
+                    <span class="c1">#F[0,j,k][s]=feq(LR[s], 1.0, bc_vel_x_left[None])-F[0,j,k,LR[s]]+feq(s,1.0,bc_vel_x_left[None])  #!!!!!!change velocity in feq into vector</span>
+                    <span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">][</span><span class="n">s</span><span class="p">]</span><span class="o">=</span><span class="n">feq</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">ti</span><span class="o">.</span><span class="n">Vector</span><span class="p">(</span><span class="n">bc_vel_x_left</span><span class="p">))</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li><p>Finally, the definition of the varible is slightly different from lbm_solver_3d</p></li>
+</ol>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="lbm_solver_3d.html" class="btn btn-neutral float-left" title="Single_phase.lbm_solver_3d" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lbm_solver_3d_sparse.html" class="btn btn-neutral float-right" title="lbm_solver_3d_sparse" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, xiongxin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

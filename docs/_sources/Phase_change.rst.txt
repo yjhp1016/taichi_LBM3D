@@ -1,43 +1,15 @@
-Phase\_change package
+Phase\_change
 =====================
 
-Submodules
-----------
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
 
-Phase\_change.LBM\_3D\_SinglePhase\_Solute\_Solver module
----------------------------------------------------------
-
-
-Phase\_change.LBM\_3D\_SinglePhase\_Solver module
--------------------------------------------------
-
-
-
-Phase\_change.example\_cavity\_melting module
----------------------------------------------
-
-
-
-Phase\_change.example\_phase\_change module
--------------------------------------------
-
-
-
-Phase\_change.read\_img\_solute\_psi\_generation\_2D module
------------------------------------------------------------
-
-
-Phase\_change.solute\_psi\_generation\_2D module
-------------------------------------------------
-
-
-
-Phase\_change.test1 module
---------------------------
-
-
-
-Module contents
----------------
-
+   phasechange/example_cavity_melting
+   phasechange/example_phase_change
+   phasechange/LBM_3D_SinglePhase_Solute_Solver
+   phasechange/LBM_3D_SinglePhase_Solver
+   phasechange/read_img_solute_psi_generation_2D
+   phasechange/solute_psi_generation_2D
+   phasechange/test1
 

@@ -322,18 +322,23 @@ At the begining of the this file it define some variable first.
                 if (solid[0,j,k]==0):
                     for s in range(19):
                     #if boundary is fluid but the neighbour is solid 
-                    # velocity equals the neighbour velocity 
+                    #equilibrium density distribution function is calculated based on the neighbour velocity 
                         if (solid[1,j,k]>0):
                             F[0,j,k,s]=feq(s, rho_bcxl, v[1,j,k])
+                    #if boundary is fluid and the neighbour is also fluid  
+                    #equilibrium density distribution function is calculated based on the boundary velocity 
                         else:
                             F[0,j,k,s]=feq(s, rho_bcxl, v[0,j,k])
 
+        #velocity-boundary conditon x-left
         if ti.static(bc_x_left==2):
             for j,k in ti.ndrange((0,ny),(0,nz)):
                 if (solid[0,j,k]==0):
                     for s in range(19):
+                    #calculate density distribution fucntion based on equilibrium part and non-equilibrium part
                         F[0,j,k,s]=feq(LR[s], 1.0, bc_vel_x_left[None])-F[0,j,k,LR[s]]+feq(s,1.0,bc_vel_x_left[None])  #!!!!!!change velocity in feq into vector
-
+        
+        #pressure boundary condition x-right similar to x-left 
         if ti.static(bc_x_right==1):
             for j,k in ti.ndrange((0,ny),(0,nz)):
                 if (solid[nx-1,j,k]==0):
@@ -343,19 +348,22 @@ At the begining of the this file it define some variable first.
                         else:
                             F[nx-1,j,k,s]=feq(s, rho_bcxr, v[nx-1,j,k])
 
+        #velocity booundary condition x-right similar to x-left 
         if ti.static(bc_x_right==2):
             for j,k in ti.ndrange((0,ny),(0,nz)):
                 if (solid[nx-1,j,k]==0):
                     for s in range(19):
                         F[nx-1,j,k,s]=feq(LR[s], 1.0, bc_vel_x_right[None])-F[nx-1,j,k,LR[s]]+feq(s,1.0,bc_vel_x_right[None])  #!!!!!!change velocity in feq into vector
 
-this
+
+``streaming3()`` calculate the macroscopic variable
 
 .. code-block:: python
 
     @ti.kernel
     def streaming3():
         for i in ti.grouped(rho):
+            #if it is fluid calculate density and velocity based on density distribution function 
             if (solid[i]==0):
                 rho[i] = 0
                 v[i] = ti.Vector([0,0,0])
@@ -366,7 +374,7 @@ this
 
                 v[i] /= rho[i]
                 v[i] += (ext_f[None]/2)/rho[i]
-
+            # if it is solid set denisty equals one and velocity equals zero 
             else:
                 rho[i] = 1.0
                 v[i] = ti.Vector([0,0,0])
@@ -374,34 +382,40 @@ this
 At the end of the file do the actual simulation and export the data
 
 .. code-block:: python
-
+    
+    #define some time varible
     time_init = time.time()
     time_now = time.time()
     time_pre = time.time()
     dt_count = 0
 
-
+    #import the solid flag data
     #solid_np = init_geo('./BC.dat')
     solid_np = init_geo('./img_ftb131.txt')
     solid.from_numpy(solid_np)
 
+    # do the initialization
     static_init()
     init()
 
-
+    # do the actual simulation 
     for iter in range(50000+1):
         colission()
         streaming1()
         Boundary_condition()
         #streaming2()
         streaming3()
-
+        # calculate every 1000 time step
         if (iter%1000==0):
 
             time_pre = time_now
             time_now = time.time()
+            #calculate the time difference between now and previous time step 
             diff_time = int(time_now-time_pre)
+            #calculate the time difference between now and the initial time
             elap_time = int(time_now-time_init)
+            #divmod function return the quotient and the remainder
+            #so that h_diff,m_diff and s_diff represent the hour, minute and second. the same as the h_elap,m_elap and s_elap
             m_diff, s_diff = divmod(diff_time, 60)
             h_diff, m_diff = divmod(m_diff, 60)
             m_elap, s_elap = divmod(elap_time, 60)
@@ -410,6 +424,7 @@ At the end of the file do the actual simulation and export the data
             print('----------Time between two outputs is %dh %dm %ds; elapsed time is %dh %dm %ds----------------------' %(h_diff, m_diff, s_diff,h_elap,m_elap,s_elap))
             print('The %dth iteration, Max Force = %f,  force_scale = %f\n\n ' %(iter, 10.0,  10.0))
 
+            #export every 1000 timestep to vtk with x,y,z coordinate and solid,density and velocity variable
             if (iter%10000==0):
                 gridToVTK(
                     "./structured"+str(iter),
@@ -424,4 +439,5 @@ At the end of the file do the actual simulation and export the data
                 )
     # ti.sync()
     # ti.profiler.print_kernel_profiler_info()
+    #print the profiler information of every kernel and task of taichi in this file 
     ti.profiler.print_scoped_profiler_info()

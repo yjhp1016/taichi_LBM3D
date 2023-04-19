@@ -1,17 +1,11 @@
-2phase package
+2phase
 ==============
 
-Submodules
-----------
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
 
-2phase.lbm\_solver\_3d\_2phase module
--------------------------------------
+   twophase/lbm_solver_3d_2phase_sparse
+   twophase/lbm_solver_3d_2phase
 
-
-2phase.lbm\_solver\_3d\_2phase\_sparse module
----------------------------------------------
-
-
-Module contents
----------------
 

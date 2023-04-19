@@ -378,18 +378,23 @@ At the begining of the this file it define some variable first.</p>
             <span class="k">if</span> <span class="p">(</span><span class="n">solid</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">):</span>
                 <span class="c1">#if boundary is fluid but the neighbour is solid</span>
-                <span class="c1"># velocity equals the neighbour velocity</span>
+                <span class="c1">#equilibrium density distribution function is calculated based on the neighbour velocity</span>
                     <span class="k">if</span> <span class="p">(</span><span class="n">solid</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
                         <span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">]</span><span class="o">=</span><span class="n">feq</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">rho_bcxl</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+                <span class="c1">#if boundary is fluid and the neighbour is also fluid</span>
+                <span class="c1">#equilibrium density distribution function is calculated based on the boundary velocity</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">]</span><span class="o">=</span><span class="n">feq</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">rho_bcxl</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
 
+    <span class="c1">#velocity-boundary conditon x-left</span>
     <span class="k">if</span> <span class="n">ti</span><span class="o">.</span><span class="n">static</span><span class="p">(</span><span class="n">bc_x_left</span><span class="o">==</span><span class="mi">2</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="n">ti</span><span class="o">.</span><span class="n">ndrange</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">ny</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="n">nz</span><span class="p">)):</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">solid</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">):</span>
+                <span class="c1">#calculate density distribution fucntion based on equilibrium part and non-equilibrium part</span>
                     <span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">]</span><span class="o">=</span><span class="n">feq</span><span class="p">(</span><span class="n">LR</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">bc_vel_x_left</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span><span class="o">-</span><span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">LR</span><span class="p">[</span><span class="n">s</span><span class="p">]]</span><span class="o">+</span><span class="n">feq</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">bc_vel_x_left</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>  <span class="c1">#!!!!!!change velocity in feq into vector</span>
 
+    <span class="c1">#pressure boundary condition x-right similar to x-left</span>
     <span class="k">if</span> <span class="n">ti</span><span class="o">.</span><span class="n">static</span><span class="p">(</span><span class="n">bc_x_right</span><span class="o">==</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="n">ti</span><span class="o">.</span><span class="n">ndrange</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">ny</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="n">nz</span><span class="p">)):</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">solid</span><span class="p">[</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
@@ -399,6 +404,7 @@ At the begining of the this file it define some variable first.</p>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">F</span><span class="p">[</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">]</span><span class="o">=</span><span class="n">feq</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">rho_bcxr</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
 
+    <span class="c1">#velocity booundary condition x-right similar to x-left</span>
     <span class="k">if</span> <span class="n">ti</span><span class="o">.</span><span class="n">static</span><span class="p">(</span><span class="n">bc_x_right</span><span class="o">==</span><span class="mi">2</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="n">ti</span><span class="o">.</span><span class="n">ndrange</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">ny</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="n">nz</span><span class="p">)):</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">solid</span><span class="p">[</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
@@ -406,10 +412,11 @@ At the begining of the this file it define some variable first.</p>
                     <span class="n">F</span><span class="p">[</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">s</span><span class="p">]</span><span class="o">=</span><span class="n">feq</span><span class="p">(</span><span class="n">LR</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">bc_vel_x_right</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span><span class="o">-</span><span class="n">F</span><span class="p">[</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">LR</span><span class="p">[</span><span class="n">s</span><span class="p">]]</span><span class="o">+</span><span class="n">feq</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">bc_vel_x_right</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>  <span class="c1">#!!!!!!change velocity in feq into vector</span>
 </pre></div>
 </div>
-<p>this</p>
+<p><code class="docutils literal notranslate"><span class="pre">streaming3()</span></code> calculate the macroscopic variable</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@ti</span><span class="o">.</span><span class="n">kernel</span>
 <span class="k">def</span> <span class="nf">streaming3</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ti</span><span class="o">.</span><span class="n">grouped</span><span class="p">(</span><span class="n">rho</span><span class="p">):</span>
+        <span class="c1">#if it is fluid calculate density and velocity based on density distribution function</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">solid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
             <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">Vector</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
@@ -420,40 +427,46 @@ At the begining of the this file it define some variable first.</p>
 
             <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">ext_f</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-
+        <span class="c1"># if it is solid set denisty equals one and velocity equals zero</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
             <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">Vector</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>At the end of the file do the actual simulation and export the data</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">time_init</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#define some time varible</span>
+<span class="n">time_init</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">time_now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">time_pre</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">dt_count</span> <span class="o">=</span> <span class="mi">0</span>
 
-
+<span class="c1">#import the solid flag data</span>
 <span class="c1">#solid_np = init_geo(&#39;./BC.dat&#39;)</span>
 <span class="n">solid_np</span> <span class="o">=</span> <span class="n">init_geo</span><span class="p">(</span><span class="s1">&#39;./img_ftb131.txt&#39;</span><span class="p">)</span>
 <span class="n">solid</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">solid_np</span><span class="p">)</span>
 
+<span class="c1"># do the initialization</span>
 <span class="n">static_init</span><span class="p">()</span>
 <span class="n">init</span><span class="p">()</span>
 
-
+<span class="c1"># do the actual simulation</span>
 <span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50000</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
     <span class="n">colission</span><span class="p">()</span>
     <span class="n">streaming1</span><span class="p">()</span>
     <span class="n">Boundary_condition</span><span class="p">()</span>
     <span class="c1">#streaming2()</span>
     <span class="n">streaming3</span><span class="p">()</span>
-
+    <span class="c1"># calculate every 1000 time step</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">iter</span><span class="o">%</span><span class="mi">1000</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
 
         <span class="n">time_pre</span> <span class="o">=</span> <span class="n">time_now</span>
         <span class="n">time_now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="c1">#calculate the time difference between now and previous time step</span>
         <span class="n">diff_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time_now</span><span class="o">-</span><span class="n">time_pre</span><span class="p">)</span>
+        <span class="c1">#calculate the time difference between now and the initial time</span>
         <span class="n">elap_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time_now</span><span class="o">-</span><span class="n">time_init</span><span class="p">)</span>
+        <span class="c1">#divmod function return the quotient and the remainder</span>
+        <span class="c1">#so that h_diff,m_diff and s_diff represent the hour, minute and second. the same as the h_elap,m_elap and s_elap</span>
         <span class="n">m_diff</span><span class="p">,</span> <span class="n">s_diff</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">diff_time</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
         <span class="n">h_diff</span><span class="p">,</span> <span class="n">m_diff</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">m_diff</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
         <span class="n">m_elap</span><span class="p">,</span> <span class="n">s_elap</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">elap_time</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
@@ -462,6 +475,7 @@ At the begining of the this file it define some variable first.</p>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----------Time between two outputs is </span><span class="si">%d</span><span class="s1">h </span><span class="si">%d</span><span class="s1">m </span><span class="si">%d</span><span class="s1">s; elapsed time is </span><span class="si">%d</span><span class="s1">h </span><span class="si">%d</span><span class="s1">m </span><span class="si">%d</span><span class="s1">s----------------------&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">h_diff</span><span class="p">,</span> <span class="n">m_diff</span><span class="p">,</span> <span class="n">s_diff</span><span class="p">,</span><span class="n">h_elap</span><span class="p">,</span><span class="n">m_elap</span><span class="p">,</span><span class="n">s_elap</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The </span><span class="si">%d</span><span class="s1">th iteration, Max Force = </span><span class="si">%f</span><span class="s1">,  force_scale = </span><span class="si">%f</span><span class="se">\n\n</span><span class="s1"> &#39;</span> <span class="o">%</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span>  <span class="mf">10.0</span><span class="p">))</span>
 
+        <span class="c1">#export every 1000 timestep to vtk with x,y,z coordinate and solid,density and velocity variable</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">iter</span><span class="o">%</span><span class="mi">10000</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
             <span class="n">gridToVTK</span><span class="p">(</span>
                 <span class="s2">&quot;./structured&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">iter</span><span class="p">),</span>
@@ -476,6 +490,7 @@ At the begining of the this file it define some variable first.</p>
             <span class="p">)</span>
 <span class="c1"># ti.sync()</span>
 <span class="c1"># ti.profiler.print_kernel_profiler_info()</span>
+<span class="c1">#print the profiler information of every kernel and task of taichi in this file</span>
 <span class="n">ti</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">print_scoped_profiler_info</span><span class="p">()</span>
 </pre></div>
 </div>
