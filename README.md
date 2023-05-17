@@ -1,4 +1,6 @@
 # taichi_LBM3D
+## Documentation 
+[https://yjhp1016.github.io/taichi_LBM3D/](https://yjhp1016.github.io/taichi_LBM3D/)
 ## Background
 Taichi_LBM3D is a 3D lattice Boltzmann solver with Multi-Relaxation-Time collision scheme and sparse storage structure implemented using [Taichi programming language](https://github.com/taichi-dev/taichi), which is designed for porous medium flow simulation. Taking advantage of Taichi's computing structure, Taichi_LBM3D can be employed on shared-memory multi-core CPUs or massively parallel GPUs (OpenGL and CUDA). **The code achieved 900 MLUPS in a 3D lid-driven test case using a A100 NVIDIA GPU**. The code is only around 400 lines, highly extensible and very intuitive to understand.
 
@@ -95,7 +97,10 @@ If you use Taichi-LBM3D in your research, please cite the corresponding paper:
      DOI = {10.3390/fluids7080270}
     }
     
+## Acknowledgement
+We acknowledge the support from ARCHER2 eCSE Programme.
 ### To do list:
 - wrap functions into class to faciliate direct use from users
 - Modify single phase gray scale and two phase data structure to improve computing efficiency (single phase code is done)
 - Packing through pip
+- Installation on ARCHER2
