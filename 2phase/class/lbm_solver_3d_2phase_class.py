@@ -643,7 +643,7 @@ class LB3D_Solver_two_Phase:
 
     def export_VTK(self, n):
         gridToVTK(
-                "./LB_SingelPhase_"+str(n),
+                "./structured_"+str(n),
                 self.x,
                 self.y,
                 self.z,
