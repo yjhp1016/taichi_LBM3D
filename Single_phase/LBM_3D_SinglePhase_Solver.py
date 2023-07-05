@@ -357,7 +357,7 @@ class LB3D_Solver_Single_Phase:
                 if (self.solid[i,j,self.nz-1]==0):
                     for s in ti.static(range(19)):
                         if (self.solid[i,j,self.nz-2]>0):
-                            self.F[i,j,self.nz-1,s]=self.feq(s, self.rho_bczr, self.v[i,j,self.nz-2])
+                            self.F[i,j,self.nz-1][s]=self.feq(s, self.rho_bczr, self.v[i,j,self.nz-2])
                         else:
                             self.F[i,j,self.nz-1][s]=self.feq(s, self.rho_bczr, self.v[i,j,self.nz-1])
 
