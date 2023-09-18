@@ -123,7 +123,8 @@ class LB3D_Solver_Single_Phase:
         self.bc_vel_z_left = [self.vx_bczl, self.vy_bczl, self.vz_bczl]
         self.bc_vel_z_right = [self.vx_bczr, self.vy_bczr, self.vz_bczr]
 
-        self.tau_f=3.0*self.niu+0.5
+        #self.tau_f=3.0*self.niu+0.5
+        self.tau_f=self.niu/3.0+0.5
         self.s_v=1.0/self.tau_f
         self.s_other=8.0*(2.0-self.s_v)/(8.0-self.s_v)
 
@@ -232,7 +233,7 @@ class LB3D_Solver_Single_Phase:
                         #f = self.cal_local_force()
                         f_guo=0.0
                         for l in ti.static(range(19)):
-                            f_guo += self.w[l]*((self.e_f[l]-self.v[i,j,k]).dot(f)+(self.e_f[l].dot(self.v[i,j,k])*(self.e_f[l].dot(f))))*self.M[None][s,l]
+                            f_guo += self.w[l]*((self.e_f[l]-self.v[i,j,k]).dot(f)/3.0+(self.e_f[l].dot(self.v[i,j,k])*(self.e_f[l].dot(f)))/9.0)*self.M[None][s,l]
                         #m_temp[s] += (1-0.5*self.S_dig[None][s])*self.GuoF(i,j,k,s,self.v[i,j,k],force)
                         m_temp[s] += (1-0.5*self.S_dig[None][s])*f_guo
                 
