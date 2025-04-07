@@ -139,7 +139,7 @@ class LB3D_Solver_Single_Phase_Solute(lb3d.LB3D_Solver_Single_Phase):
         self.solute_bczl = zl
 
     def set_bc_constant_temperature_z_right(self,zr):
-        self.solute_bc_y_right = 1
+        self.solute_bc_z_right = 1
         self.solute_bczr = zr
 
     
